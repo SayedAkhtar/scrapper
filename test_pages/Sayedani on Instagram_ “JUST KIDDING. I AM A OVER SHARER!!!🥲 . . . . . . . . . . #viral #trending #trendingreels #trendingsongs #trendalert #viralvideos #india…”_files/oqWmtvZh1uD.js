@@ -1,0 +1,5 @@
+;/*FB_PKG_DELIM*/
+
+__d("polarisWebReportSelectors",[],(function(a,b,c,d,e,f){"use strict";function a(a){return a.webReport.commentReportMode}function b(a){return a.webReport.userReportMode}function c(a){return a.webReport.category}function d(a){return a.webReport.isProcessing}f.getCommentReportMode=a;f.getUserReportMode=b;f.getReportCategory=c;f.getReportIsProcessing=d}),66);
+__d("PolarisInternalBadge.react",["cx","fbt","IGDSText.react","react"],(function(a,b,c,d,e,f,g,h,i){"use strict";var j=d("react"),k=i._("Internal");function a(){var a=j.jsx(c("IGDSText.react").Body2Emphasized,{color:"webAlwaysWhite",children:k});return j.jsx("div",{className:"_aars",children:a})}a.displayName=a.name+" [from "+f.id+"]";g["default"]=a}),98);
+__d("PolarisGuideConstants",["PolarisSizing","PolarisUA"],(function(a,b,c,d,e,f,g){"use strict";a="GuidePage";b=3/4;c=1/1;e=d("PolarisUA").isDesktop()?c:b;f=48;c=40;b={IG_MEDIA:"IG_MEDIA",PRODUCT_IMAGE:"PRODUCT_IMAGE"};g.PAGE_ID=a;g.MAX_WIDTH=d("PolarisSizing").FEED_WIDTH_WIDE;g.COVER_PHOTO_ASPECT_RATIO=e;g.DESKTOP_GUIDE_ITEM_X_MARGINS=f;g.MOBILE_GUIDE_ITEM_X_MARGINS=c;g.GuideMediaTypes=b}),98);

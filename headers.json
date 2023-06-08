@@ -1,0 +1,13 @@
+{
+  "x-ig-www-claim": "0",
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36",
+  "viewport-width": "1366",
+  "accept": "*/*",
+  "referer": "https://www.instagram.com/cristiano/",
+  "x-requested-with": "XMLHttpRequest",
+  "x-asbd-id": "198387",
+  "x-csrftoken": "mOsaL7vHTVY37i2Xi8pa1rVbT1o3ncd1",
+  "sec-ch-prefers-color-scheme": "light",
+  "x-ig-app-id": "936619743392459",
+  "cookie": "shbid=\"6852\\05459879064200\\0541717598840:01f716442c96e7a84b592311dcccfe8c4914fd5bc04b17715e112e0a119b020333570011\"; shbts=\"1686062840\\05459879064200\\0541717598840:01f7adc3a71a4fc5445434f7571f826327e94736e7870b9018e1ae5c48356c76fcc9b01a\"; sessionid=59879064200%3AGtWxjXetNCBQh4%3A11%3AAYdnr2Zgx5SGoHQyWNjGhNo6eQDU0Xw0ovVXidA8Nw; mid=ZH9G8wALAAEpDivxgZwLESyfAZhP; csrftoken=mOsaL7vHTVY37i2Xi8pa1rVbT1o3ncd1; ig_nrcb=1; datr=8kZ_ZIwuoWmJt217EVE9ICK_; ds_user_id=59879064200; ig_did=24865F89-B6A2-49BD-AAA9-8BB5AAF4F953; rur=\"EAG\\05459879064200\\0541717600031:01f7a331e4affcb87757f46cd940def3c8e3ef8713996d24e619663b9ff275ea9b073c63\""
+}
