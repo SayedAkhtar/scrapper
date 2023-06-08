@@ -1,0 +1,7 @@
+/node_modules
+/downloads
+*.mp4
+*.jpg
+*.png
+.DS_Store
+.DS_Store

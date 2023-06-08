@@ -6,13 +6,16 @@ const fs = require('fs').promises;
 
 ( async() => {
     const browser = await puppeteer.launch({
-        headless: false
+        headless: "new"
     });
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36');
     await page.setViewport({ width: 1366, height: 768 });
     await page.goto('https://instagram.com', {waitUntil: 'networkidle2'});
-
+    await page.waitForSelector('input[name="username"]');
+    await page.waitForSelector('input[name="password"]');
+    await page.waitForSelector('button[type="submit"]');
+    await page.screenshot({path: 'example.png'});
     await page.type('input[name="username"]', 'sayed.akhtar@fxprosinc.com');
     await page.type('input[name="password"]', 'br^08gRL$1cs');
     await page.click('button[type="submit"]');
