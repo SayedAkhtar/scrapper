@@ -1,8 +1,10 @@
 const puppeteer = require("puppeteer");
 const fs = require('fs').promises;
+const fetch = require("node-fetch");
+const { API } = require("../config");
 
 async function getProfileStats(username) {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
 
   await page.setUserAgent(
@@ -45,10 +47,48 @@ async function getProfileStats(username) {
     };
   });
 
+  await postDataToMongo(data);
   console.log(data);
-
   await browser.close();
 }
 
+
+
+async function postDataToMongo(req){
+  var date = new Date();
+    let user =[{
+      "user_name": req.username, 
+      "name": req.username, 
+      "posts": req.postsCount.replace(/\D/g, ""), 
+      "followers": req.followersCount.replace(/\D/g, ""), 
+      "following": req.followingCount.replace(/\D/g, ""), 
+      "creation_date": date.toJSON().toString(), 
+      "is_private": false, 
+      "is_verified": true, 
+      "is_business": false
+      }];
+      console.log(JSON.stringify(user));
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(user),
+      headers: { 'Content-Type': 'application/json' },
+    }
+    try{
+      let res = await fetch(API+'api/user', options);
+      let data = await res.json();
+      console.log(data);
+    }catch(e){
+      console.log(e);
+    }
+}
+
 // Usage: Pass the username of the profile you want to scrape
-getProfileStats("cristiano");
+// getProfileStats("cristiano");
+
+const args = process.argv.slice(2);
+if(args.length == 1){
+  getProfileStats(args[0]);
+}else{
+  console.error("Please provide a username  \nUsage: node instagram/profile_stats.js <username>");
+}
+

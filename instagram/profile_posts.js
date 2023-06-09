@@ -83,38 +83,89 @@ async function getProfilePostsFromApi(username) {
     ([name, value]) => `${name}=${value}`
   );
   const data = headerObj.join("; ");
-  var res = await fetch(
-    `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12`,
-    {
-      headers: header,
-      referrer: `https://www.instagram.com/${username}/`,
-      referrerPolicy: "strict-origin-when-cross-origin",
-      body: null,
-      method: "GET",
-      mode: "cors",
-      credentials: "include",
-    }
-  );
-  var body = await res.json();
-  body.items.forEach(element => {
-    let likeCount = element.like_count;
-    let timeStamp = element.taken_at;
-    let commentCount = element.comment_count;
-    console.log("LikeCount : "+likeCount);
-    console.log("Comment Count : "+commentCount);
-    if('carousel_media' in element){
-      let images = element.carousel_media;
-      images.forEach(e => {
-        console.log("Post Image : "+e.image_versions2.candidates[0].url)
-      });
-    }
-    if('image_versions2' in element){
-      console.log("Post Image : "+element.image_versions2.candidates[0].url);
-    }
-    
-  });
+  
+  let fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12`;
+  let moreAvailable = true;
+  let count = 0;
+  do{
+    let posts = [];
+    var res = await fetch(
+      fetchUrl,
+      {
+        headers: header,
+        referrer: `https://www.instagram.com/${username}/`,
+        referrerPolicy: "strict-origin-when-cross-origin",
+        body: null,
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+      }
+    );
+    var body = await res.json();
+    console.log(body);
+    body.items.forEach((element) => {
+      let likeCount = element.like_count;
+      let timeStamp = element.taken_at;
+      let commentCount = element.comment_count;
+      let storageUrl = [];
+      let commentsData = [];
+      if ("carousel_media" in element) {
+        let images = element.carousel_media;
+        images.forEach((e) => {
+          storageUrl.push(e.image_versions2.candidates[0].url);
+        });
+      }
+      if ("image_versions2" in element) {
+        storageUrl.push(element.image_versions2.candidates[0].url);
+      }
+      if("preview_comments" in element){
+        let comments = element.preview_comments;
+        comments.forEach((e) => {
+          commentsData.push(e.text);
+        });
+      }
+  
+      let data = {
+        user_name: username,
+        post_id: element.pk,
+        hashtag: "#travelpost",
+        caption: element.caption.text ?? "",
+        post_url: element.code,
+        storage_url: storageUrl,
+        num_comments: commentCount,
+        num_likes: likeCount,
+        is_sponsored: element.is_paid_partnership,
+        comments: commentsData,
+      };
+      posts.push(data);
+    });
+    count += body.items.length;
+    console.warn(`Fetched ${count} posts`);
+    body.more_available ? fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}` : moreAvailable = false;
+    Utils.sleep(10);
+    // await postDataToMongo(posts);
+    console.log(posts);
+  }while(moreAvailable)
+  
+
+  console.log(posts);
 }
 
 // Usage: Pass the username of the profile you want to scrape
 // getProfilePosts("cristiano");
 getProfilePostsFromApi("cristiano");
+
+async function postDataToMongo(req){
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(req),
+      headers: { 'Content-Type': 'application/json' },
+    }
+    try{
+      let res = await fetch(API+'api/post', options);
+      let data = await res.json();
+      console.log(data);
+    }catch(e){
+      console.log(e);
+    }
+}
