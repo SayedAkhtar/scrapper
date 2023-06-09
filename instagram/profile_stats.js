@@ -56,16 +56,31 @@ async function getProfileStats(username) {
 
 async function postDataToMongo(req){
   var date = new Date();
+    const temp = req.followersCount.split(' ')[0].replace(/[0-9]/g, "");
+    let followersCount=req.followersCount.replace(/\D/g, "");
+    if(temp == 'M'){
+      followersCount = req.followersCount.replace(/\D/g, "")*1000000;
+    }else if(temp == 'K'){
+      followersCount = req.followersCount.replace(/\D/g, "")*1000;
+    }
+    const temp1 = req.followingCount.split(' ')[0].replace(/[0-9]/g, "");
+    let followingCount = req.followingCount.replace(/\D/g, "");
+    if(temp1 == 'M'){
+      followingCount = req.followingCount.replace(/\D/g, "")*1000000;
+    }else if(temp1 == 'K'){
+      followingCount = req.followingCount.replace(/\D/g, "")*1000;
+    }
+    console.log(temp);
     let user =[{
       "user_name": req.username, 
       "name": req.username, 
       "posts": req.postsCount.replace(/\D/g, ""), 
-      "followers": req.followersCount.replace(/\D/g, ""), 
-      "following": req.followingCount.replace(/\D/g, ""), 
+      "followers": followersCount, 
+      "following": followingCount, 
       "creation_date": date.toJSON().toString(), 
       "is_private": false, 
       "is_verified": true, 
-      "is_business": false
+      "is_business": false,
       }];
       console.log(JSON.stringify(user));
     const options = {

@@ -153,7 +153,7 @@ async function getProfilePostsFromApi(username) {
 
 // Usage: Pass the username of the profile you want to scrape
 // getProfilePosts("cristiano");
-getProfilePostsFromApi("cristiano");
+// getProfilePostsFromApi("cristiano");
 
 async function postDataToMongo(req){
     const options = {
@@ -168,4 +168,11 @@ async function postDataToMongo(req){
     }catch(e){
       console.log(e);
     }
+}
+
+const args = process.argv.slice(2);
+if(args.length == 1){
+  getProfilePostsFromApi(args[0]);
+}else{
+  console.error("Please provide a username  \nUsage: node instagram/profile_stats.js <username>");
 }
