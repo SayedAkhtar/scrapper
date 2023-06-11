@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs").promises;
 const Utils = require("../helpers/Utils");
+const { logger, scrapperLogger } = require("../logger");
 
 async function getProfilePosts(username) {
   const browser = await puppeteer.launch({ headless: false });
@@ -88,63 +89,67 @@ async function getProfilePostsFromApi(username) {
   let moreAvailable = true;
   let count = 0;
   do{
-    let posts = [];
-    var res = await fetch(
-      fetchUrl,
-      {
-        headers: header,
-        referrer: `https://www.instagram.com/${username}/`,
-        referrerPolicy: "strict-origin-when-cross-origin",
-        body: null,
-        method: "GET",
-        mode: "cors",
-        credentials: "include",
-      }
-    );
-    var body = await res.json();
-    console.log(body);
-    body.items.forEach((element) => {
-      let likeCount = element.like_count;
-      let timeStamp = element.taken_at;
-      let commentCount = element.comment_count;
-      let storageUrl = [];
-      let commentsData = [];
-      if ("carousel_media" in element) {
-        let images = element.carousel_media;
-        images.forEach((e) => {
-          storageUrl.push(e.image_versions2.candidates[0].url);
-        });
-      }
-      if ("image_versions2" in element) {
-        storageUrl.push(element.image_versions2.candidates[0].url);
-      }
-      if("preview_comments" in element){
-        let comments = element.preview_comments;
-        comments.forEach((e) => {
-          commentsData.push(e.text);
-        });
-      }
-  
-      let data = {
-        user_name: username,
-        post_id: element.pk,
-        hashtag: "#travelpost",
-        caption: element.caption.text ?? "",
-        post_url: element.code,
-        storage_url: storageUrl,
-        num_comments: commentCount,
-        num_likes: likeCount,
-        is_sponsored: element.is_paid_partnership,
-        comments: commentsData,
-      };
-      posts.push(data);
-    });
-    count += body.items.length;
-    console.warn(`Fetched ${count} posts`);
-    body.more_available ? fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}` : moreAvailable = false;
-    Utils.sleep(10);
-    // await postDataToMongo(posts);
-    console.log(posts);
+    try{
+      let posts = [];
+      var res = await fetch(
+        fetchUrl,
+        {
+          headers: header,
+          referrer: `https://www.instagram.com/${username}/`,
+          referrerPolicy: "strict-origin-when-cross-origin",
+          body: null,
+          method: "GET",
+          mode: "cors",
+          credentials: "include",
+        }
+      );
+      var body = await res.json();
+      body.items.forEach((element) => {
+        let likeCount = element.like_count;
+        let timeStamp = element.taken_at;
+        let commentCount = element.comment_count;
+        let storageUrl = [];
+        let commentsData = [];
+        if ("carousel_media" in element) {
+          let images = element.carousel_media;
+          images.forEach((e) => {
+            storageUrl.push(e.image_versions2.candidates[0].url);
+          });
+        }
+        if ("image_versions2" in element) {
+          storageUrl.push(element.image_versions2.candidates[0].url);
+        }
+        if("preview_comments" in element){
+          let comments = element.preview_comments;
+          comments.forEach((e) => {
+            commentsData.push(e.text);
+          });
+        }
+    
+        let data = {
+          user_name: username,
+          post_id: element.pk,
+          hashtag: "#travelpost",
+          caption: element.caption.text ?? "",
+          post_url: element.code,
+          storage_url: storageUrl,
+          num_comments: commentCount,
+          num_likes: likeCount,
+          is_sponsored: element.is_paid_partnership,
+          comments: commentsData,
+        };
+        posts.push(data);
+      });
+      body.more_available ? fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}` : moreAvailable = false;
+      scrapperLogger.info(`${count} Profile posts for ${username} fetched successfully`);
+      Utils.sleep(100);
+      await postDataToMongo(posts);
+      count += body.items.length;
+    }catch(e){
+      logger.error(e);
+      console.log(e);
+    }
+    
   }while(moreAvailable)
   
 
@@ -166,6 +171,7 @@ async function postDataToMongo(req){
       let data = await res.json();
       console.log(data);
     }catch(e){
+      logger.error(e);
       console.log(e);
     }
 }

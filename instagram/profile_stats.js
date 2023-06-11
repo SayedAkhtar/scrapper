@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require('fs').promises;
 const fetch = require("node-fetch");
 const { API } = require("../config");
+const { logger, scrapperLogger } = require("../logger");
 
 async function getProfileStats(username) {
   const browser = await puppeteer.launch({ headless: 'new' });
@@ -36,6 +37,7 @@ async function getProfileStats(username) {
       followersCount = header.children[2].children[1].innerText ?? "";
       followingCount = header.children[2].children[2].innerText ?? "";
     } catch (e) {
+      logger.error(e);
       console.log(e);
     }
 
@@ -47,9 +49,10 @@ async function getProfileStats(username) {
     };
   });
 
-  await postDataToMongo(data);
-  console.log(data);
+  var res = await postDataToMongo(data);
+  scrapperLogger.info(`Profile stats for ${username} fetched successfully`);
   await browser.close();
+  return Promise.resolve(res);
 }
 
 
@@ -91,10 +94,13 @@ async function postDataToMongo(req){
     try{
       let res = await fetch(API+'api/user', options);
       let data = await res.json();
-      console.log(data);
+      scrapperLogger.info(`Profile stats for ${username} posted successfully`);
+      return true;
     }catch(e){
+      logger.error(e);
       console.log(e);
     }
+    return false;
 }
 
 // Usage: Pass the username of the profile you want to scrape
@@ -106,4 +112,6 @@ if(args.length == 1){
 }else{
   console.error("Please provide a username  \nUsage: node instagram/profile_stats.js <username>");
 }
+
+module.exports = getProfileStats;
 
