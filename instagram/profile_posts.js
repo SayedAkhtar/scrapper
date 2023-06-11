@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs").promises;
 const Utils = require("../helpers/Utils");
 const { logger, scrapperLogger } = require("../logger");
+const { get } = require("http");
 
 async function getProfilePosts(username) {
   const browser = await puppeteer.launch({ headless: false });
@@ -84,25 +85,22 @@ async function getProfilePostsFromApi(username) {
     ([name, value]) => `${name}=${value}`
   );
   const data = headerObj.join("; ");
-  
+
   let fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12`;
   let moreAvailable = true;
   let count = 0;
-  do{
-    try{
+  do {
+    try {
       let posts = [];
-      var res = await fetch(
-        fetchUrl,
-        {
-          headers: header,
-          referrer: `https://www.instagram.com/${username}/`,
-          referrerPolicy: "strict-origin-when-cross-origin",
-          body: null,
-          method: "GET",
-          mode: "cors",
-          credentials: "include",
-        }
-      );
+      var res = await fetch(fetchUrl, {
+        headers: header,
+        referrer: `https://www.instagram.com/${username}/`,
+        referrerPolicy: "strict-origin-when-cross-origin",
+        body: null,
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+      });
       var body = await res.json();
       body.items.forEach((element) => {
         let likeCount = element.like_count;
@@ -119,13 +117,13 @@ async function getProfilePostsFromApi(username) {
         if ("image_versions2" in element) {
           storageUrl.push(element.image_versions2.candidates[0].url);
         }
-        if("preview_comments" in element){
+        if ("preview_comments" in element) {
           let comments = element.preview_comments;
           comments.forEach((e) => {
             commentsData.push(e.text);
           });
         }
-    
+
         let data = {
           user_name: username,
           post_id: element.pk,
@@ -140,19 +138,22 @@ async function getProfilePostsFromApi(username) {
         };
         posts.push(data);
       });
-      body.more_available ? fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}` : moreAvailable = false;
-      scrapperLogger.info(`${count} Profile posts for ${username} fetched successfully`);
+      body.more_available
+        ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}`)
+        : (moreAvailable = false);
+      scrapperLogger.info(
+        `${count} Profile posts for ${username} fetched successfully`
+      );
       Utils.sleep(100);
       await postDataToMongo(posts);
       count += body.items.length;
-    }catch(e){
+    } catch (e) {
       logger.error(e);
       console.log(e);
     }
-    
-  }while(moreAvailable)
-  
+  } while (moreAvailable);
 
+  return Promise.resolve(true);
   console.log(posts);
 }
 
@@ -160,25 +161,32 @@ async function getProfilePostsFromApi(username) {
 // getProfilePosts("cristiano");
 // getProfilePostsFromApi("cristiano");
 
-async function postDataToMongo(req){
-    const options = {
-      method: 'POST',
-      body: JSON.stringify(req),
-      headers: { 'Content-Type': 'application/json' },
-    }
-    try{
-      let res = await fetch(API+'api/post', options);
-      let data = await res.json();
-      console.log(data);
-    }catch(e){
-      logger.error(e);
-      console.log(e);
-    }
+async function postDataToMongo(req) {
+  const options = {
+    method: "POST",
+    body: JSON.stringify(req),
+    headers: { "Content-Type": "application/json" },
+  };
+  try {
+    let res = await fetch(API + "api/post", options);
+    let data = await res.json();
+    return true;
+  } catch (e) {
+    logger.error(e);
+    console.log(e);
+  }
+  return false;
 }
 
-const args = process.argv.slice(2);
-if(args.length == 1){
-  getProfilePostsFromApi(args[0]);
-}else{
-  console.error("Please provide a username  \nUsage: node instagram/profile_stats.js <username>");
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  if (args.length == 1) {
+    getProfilePostsFromApi(args[0]);
+  } else {
+    console.error(
+      "Please provide a username  \nUsage: node instagram/profile_stats.js <username>"
+    );
+  }
 }
+
+module.exports = getProfilePostsFromApi;

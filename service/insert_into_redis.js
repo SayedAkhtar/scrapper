@@ -3,15 +3,19 @@ const { createClient } = require('redis');
 const {logger} = require('../logger.js');
 
 async function getUsers() {
-  const response = await fetch(API+'/api/tracking?processing_status=none')
-  const users = await response.json()
-  console.log(users)
-  return users
+    try{
+        const response = await fetch(API+'/api/tracking?processing_status=none')
+        const users = await response.json()
+        return users
+    }catch(e){
+        throw e;
+    }
 }
 
 async function insertUsersIntoRedis() { 
+    console.log(REFRESH_INTERVAL);
     try{
-        const client = createClient();
+        const client = createClient(6379, '127.0.0.1');
         client.on('error', err => console.log('Redis Client Error', err));
         await client.connect();
         setInterval(async () => {
@@ -19,7 +23,8 @@ async function insertUsersIntoRedis() {
             users.forEach(async user => {
                 await client.set("USER:"+user.user_name, user.processing_status, {EX: REFRESH_INTERVAL});
             });
-        }, REFRESH_INTERVAL);
+            console.log("Users inserted into redis");
+        }, REFRESH_INTERVAL * 1000);
     }catch(err){
         logger.error(err);
     }
