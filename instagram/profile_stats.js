@@ -5,7 +5,7 @@ const { API } = require("../config");
 const { logger, scrapperLogger } = require("../logger");
 
 async function getProfileStats(username) {
-  const browser = await puppeteer.launch({ headless: "new" });
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
 
   await page.setUserAgent(
@@ -48,11 +48,12 @@ async function getProfileStats(username) {
         followingCount,
       };
     });
+    scrapperLogger.info(`Profile stats for ${username} fetched successfully`);
 
     var res = await postDataToMongo(data);
-    scrapperLogger.info(`Profile stats for ${username} fetched successfully`);
+    var response = await updateStatus(username);
   } catch (e) {
-    logger.error(e);
+    logger.error(e.toString());
   }
   // Extract data from the user's profile
   await browser.close();
@@ -97,10 +98,44 @@ async function postDataToMongo(req) {
   try {
     let res = await fetch(API + "api/user", options);
     let data = await res.json();
-    scrapperLogger.info(`Profile stats for ${req.username} posted successfully`);
+    scrapperLogger.info(
+      `Profile stats for ${req.username} posted successfully`
+    );
     return true;
   } catch (e) {
-    logger.error(e);
+    logger.error(e.toString());
+    console.log(e);
+  }
+  return false;
+}
+
+async function updateStatus(username) {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+
+  var raw = JSON.stringify({
+    user_name: username,
+    processing_status: "processed",
+  });
+
+  console.error(raw);
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  try {
+    fetch("http://3.110.222.130:5000/api/tracking", requestOptions)
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.log("error", error));
+    scrapperLogger.info(`Status for ${username} updated successfully`);
+    return true;
+  } catch (e) {
+    logger.error(e.toString());
     console.log(e);
   }
   return false;

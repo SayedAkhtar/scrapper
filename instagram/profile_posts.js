@@ -3,6 +3,7 @@ const fs = require("fs").promises;
 const Utils = require("../helpers/Utils");
 const { logger, scrapperLogger } = require("../logger");
 const { get } = require("http");
+const { API } = require("../config");
 
 async function getProfilePosts(username) {
   const browser = await puppeteer.launch({ headless: false });
@@ -144,15 +145,15 @@ async function getProfilePostsFromApi(username) {
       scrapperLogger.info(
         `${count} Profile posts for ${username} fetched successfully`
       );
-      Utils.sleep(100);
+      await Utils.sleep(100);
       await postDataToMongo(posts);
       count += body.items.length;
     } catch (e) {
-      logger.error(e);
+      logger.error(e.toString());
       console.log(e);
     }
   } while (moreAvailable);
-
+  await updateStatus(username);
   return Promise.resolve(true);
   console.log(posts);
 }
@@ -172,10 +173,28 @@ async function postDataToMongo(req) {
     let data = await res.json();
     return true;
   } catch (e) {
-    logger.error(e);
+    logger.error(e.toString());
     console.log(e);
   }
   return false;
+}
+
+async function updateStatus(username) {
+  const options2 = {
+    method: "POST",
+    body: JSON.stringify({
+      user_name: username,
+      processing_status: "completed"
+    }),
+    headers: { "Content-Type": "application/json" },
+  };
+
+  try{
+    let res2 = await fetch(API + "api/tracking/", options2);
+  }catch(e){
+    logger.error(e.toString());
+    console.log(e);
+  }
 }
 
 if (require.main === module) {
@@ -188,5 +207,6 @@ if (require.main === module) {
     );
   }
 }
+
 
 module.exports = getProfilePostsFromApi;

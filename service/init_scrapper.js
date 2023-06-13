@@ -1,35 +1,43 @@
-const { createClient } = require('redis');
-const {logger} = require('../logger.js');
-const getProfileStats = require('../instagram/profile_stats.js');
-const getProfilePostsFromApi = require('../instagram/profile_posts.js');
-const { sleep } = require('../helpers/Utils.js');
+const { createClient } = require("redis");
+const { logger } = require("../logger.js");
+const getProfileStats = require("../instagram/profile_stats.js");
+const getProfilePostsFromApi = require("../instagram/profile_posts.js");
+const { sleep } = require("../helpers/Utils.js");
+const { REFRESH_INTERVAL } = require("../config.js");
 
-async function init(){
-    let users = [];
-    const client = createClient(6379, '127.0.0.1');
-    client.on('error', err => console.log('Redis Client Error', err));
-    await client.connect();
-    console.log("Connected to redis");
-    let keys = await client.KEYS('*');
-    for(let i = 0, len = keys.length; i < len; i++) {
-        users.push(keys[i].split(':')[1]);
-    }
-    // client.keys('USER:johndoe', (err, keys) => {
-    //     console.log(keys);
-    //     if (err) return console.log(err);
-        // for(let i = 0, len = keys.length; i < len; i++) {
-        //     users.push(keys[i].split(':')[1]);
-        // }
-    // })
-    users.forEach(async user => {     
+async function init() {
+  let users = [];
+  const client = createClient(6379, "127.0.0.1");
+  client.on("error", (err) => console.log("Redis Client Error", err));
+  await client.connect();
+  console.log("Connected to redis");
+
+  try {
+    setInterval(async () => {
+    const keys = await client.KEYS("*");
+    console.log(keys);
+    if(keys != undefined && keys.length > 0){
+        const user = keys[0].split(":")[1];
         let status = await getProfileStats(user);
-        if(status){
-            let s = await getProfilePostsFromApi(user);
-            await client.del("USER:"+user);
-            logger.info(`User ${user} deleted from redis`);
-        }
-        sleep(30);
-    });
+        await client.del("USER:" + user);
+        logger.info(`User ${user} deleted from redis`);
+    }else{
+        console.log("No users in redis");
+    }
+    
+    // if (status) {
+    //   let s = await getProfilePostsFromApi(user);
+    // }
+    }, 100 * 1000);
+  } catch (err) {
+    logger.error(err.toString());
+  }
+}
+
+async function runner(users) {
+  for (let i = 0; i < users.length; i++) {
+    await getProfileStats(users[i]);
+  }
 }
 
 init();

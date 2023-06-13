@@ -26,7 +26,7 @@ async function insertUsersIntoRedis() {
             console.log("Users inserted into redis");
         }, REFRESH_INTERVAL * 1000);
     }catch(err){
-        logger.error(err);
+        logger.error(err.toString());
     }
     
 }
