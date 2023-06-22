@@ -8,7 +8,7 @@ const PASSWORD = "Fxpayservices";
 
 const loginToInstagram = async () => {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: "new",
   });
   const page = await browser.newPage();
   await page.setUserAgent(

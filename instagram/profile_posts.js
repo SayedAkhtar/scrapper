@@ -6,7 +6,7 @@ const { get } = require("http");
 const { API } = require("../config");
 
 async function getProfilePosts(username) {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
 
   await page.setUserAgent(
@@ -137,8 +137,8 @@ async function getProfilePostsFromApi(username) {
         `${count} Profile posts for ${username} fetched successfully`
       );
       console.log(count);
-      await Utils.sleep(100);
       await postDataToMongo(posts);
+      await Utils.sleep(100);
     } catch (e) {
       logger.error(e.toString());
       console.log(e);
@@ -170,6 +170,8 @@ async function postDataToMongo(req) {
   try {
     let res = await fetch(API + "api/post", options);
     let data = await res.json();
+    console.log(res.status);
+    console.log(res)
     return true;
   } catch (e) {
     logger.error(e.toString());
@@ -183,7 +185,7 @@ async function updateStatus(username) {
     method: "POST",
     body: JSON.stringify({
       user_name: username,
-      processing_status: "completed",
+      processing_status: "processed",
     }),
     headers: { "Content-Type": "application/json" },
   };

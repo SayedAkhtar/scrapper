@@ -15,20 +15,25 @@ async function init() {
   console.log("Connected to redis");
 
   try {
-    // setInterval(async () => {
+    setInterval(async () => {
       const keys = await client.KEYS("*");
       console.log(keys);
       if (keys != undefined && keys.length > 0) {
-        const user = keys[0].split(":")[1];
-        let userId = await fetchApiHeaders(user);
-        let status = await getProfileStatsApi(userId);
+        // console.log(keys[0].indexOf(':'))
+        const user = keys[0].slice(keys[0].indexOf(':')+1);
         await client.del("USER:" + user);
-        logger.info(`User ${user} deleted from redis`);
-        childPostDetails(user);
+        let userId = await fetchApiHeaders(user);
+        if(userId){
+          let status = await getProfileStatsApi(userId);
+          console.log(status);
+          logger.info(`User ${user} deleted from redis`);
+          childPostDetails(user);
+        }
       } else {
+        logger.info(`User ${user} Somthig Wrong fettching data`);
         console.log("No users in redis");
       }
-    // }, 100 * 1000);
+    },100 *  1000);
   } catch (err) {
     logger.error(err.toString());
   }

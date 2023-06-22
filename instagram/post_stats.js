@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs").promises;
 
 async function getPostStats(postUrl) {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
 
   await page.setUserAgent(

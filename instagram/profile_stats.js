@@ -5,7 +5,7 @@ const { API } = require("../config");
 const { logger, scrapperLogger } = require("../logger");
 
 async function getProfileStats(username) {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
 
   await page.setUserAgent(

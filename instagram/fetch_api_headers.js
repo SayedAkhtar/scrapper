@@ -6,7 +6,7 @@ const { logger, scrapperLogger } = require("../logger");
 
 const fetchApiHeaders = async (username = "") => {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: "new",
     ignoreHTTPSErrors: true,
   });
   const page = await browser.newPage();
@@ -65,9 +65,17 @@ const fetchApiHeaders = async (username = "") => {
         mode: "cors",
         credentials: "include",
       });
-      var body = await res.json();
-      return body.data.user.id;
+      console.log(res);
+      if(res.status == 200){
+        var body = await res.json();
+        return body.data.user.id;
+      }
+      else{
+        console.log("here");
+        await updateStatus(username);
+      }
     }catch (e){
+      await updateStatus(username);
       logger.info(`Error while fetching headers for ${username}  : ${e.toString()}}`);
     }
   
@@ -75,5 +83,23 @@ const fetchApiHeaders = async (username = "") => {
   
 };
 
+async function updateStatus(username) {
+  const options2 = {
+    method: "POST",
+    body: JSON.stringify({
+      user_name: username,
+      processing_status: "processed",
+    }),
+    headers: { "Content-Type": "application/json" },
+  };
+
+  try {
+    let res2 = await fetch("http://3.110.222.130:5000/api/trackingapi/tracking/", options2);
+    console.log(res2.status);
+  } catch (e) {
+    logger.error(e.toString());
+    console.log(e);
+  }
+}
 
 module.exports = fetchApiHeaders;
