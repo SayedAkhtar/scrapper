@@ -13,7 +13,6 @@ async function getUsers() {
 }
 
 async function insertUsersIntoRedis() { 
-    console.log(REFRESH_INTERVAL);
     try{
         const client = createClient(6379, '127.0.0.1');
         client.on('error', err => console.log('Redis Client Error', err));

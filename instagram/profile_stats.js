@@ -5,7 +5,7 @@ const { API } = require("../config");
 const { logger, scrapperLogger } = require("../logger");
 
 async function getProfileStats(username) {
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
   await page.setUserAgent(
@@ -62,27 +62,27 @@ async function getProfileStats(username) {
 
 async function postDataToMongo(req) {
   var date = new Date();
-  const temp = req.followersCount.split(" ")[0].replace(/[0-9]/g, "");
-  let followersCount = req.followersCount.replace(/\D/g, "");
-  if (temp == "M") {
-    followersCount = req.followersCount.replace(/\D/g, "") * 1000000;
-  } else if (temp == "K") {
-    followersCount = req.followersCount.replace(/\D/g, "") * 1000;
-  }
-  const temp1 = req.followingCount.split(" ")[0].replace(/[0-9]/g, "");
-  let followingCount = req.followingCount.replace(/\D/g, "");
-  if (temp1 == "M") {
-    followingCount = req.followingCount.replace(/\D/g, "") * 1000000;
-  } else if (temp1 == "K") {
-    followingCount = req.followingCount.replace(/\D/g, "") * 1000;
-  }
+  // const temp = req.followersCount.split(" ")[0].replace(/[0-9]/g, "");
+  // let followersCount = req.followersCount.replace(/\D/g, "");
+  // if (temp == "M") {
+  //   followersCount = req.followersCount.replace(/\D/g, "") * 1000000;
+  // } else if (temp == "K") {
+  //   followersCount = req.followersCount.replace(/\D/g, "") * 1000;
+  // }
+  // const temp1 = req.followingCount.split(" ")[0].replace(/[0-9]/g, "");
+  // let followingCount = req.followingCount.replace(/\D/g, "");
+  // if (temp1 == "M") {
+  //   followingCount = req.followingCount.replace(/\D/g, "") * 1000000;
+  // } else if (temp1 == "K") {
+  //   followingCount = req.followingCount.replace(/\D/g, "") * 1000;
+  // }
   let user = [
     {
       user_name: req.username,
       name: req.username,
-      posts: req.postsCount.replace(/\D/g, ""),
-      followers: followersCount,
-      following: followingCount,
+      posts: req.postsCount,
+      followers: req.followersCount,
+      following: req.followingCount,
       creation_date: date.toJSON().toString(),
       is_private: false,
       is_verified: true,
@@ -141,13 +141,54 @@ async function updateStatus(username) {
   return false;
 }
 
+const getProfileStatsApi = async (userID) => {
+  const headerString = await fs.readFile("./headers.json");
+  const header = JSON.parse(headerString);
+  const headerObj = Object.entries(header).map(
+    ([name, value]) => `${name}=${value}`
+  );
+  const data = headerObj.join("; ");
+
+  let fetchUrl = `https://www.instagram.com/api/v1/users/${userID}/info/`;
+
+  try{
+    var res = await fetch(fetchUrl, {
+      headers: header,
+      referrer: `https://www.instagram.com/`,
+      referrerPolicy: "strict-origin-when-cross-origin",
+      body: null,
+      method: "GET",
+      mode: "cors",
+      credentials: "include",
+    });
+    var body = await res.json();
+    var { follower_count, following_count, media_count, full_name, username, is_private, is_verified, is_business  } = body.user;
+    var res = await postDataToMongo({
+      username: username,
+      followersCount: follower_count,
+      followingCount: following_count,
+      postsCount: media_count,
+      name: full_name,
+      is_private: is_private,
+      is_business: is_business,
+      is_verified: is_verified,
+    });
+  
+    return updateStatus(username);
+  }catch (e){
+      logger.info(`Error while fetching Profile Info for ${username}  : ${e.toString()}}`);
+  }
+  return Promise.resolve(false);
+};
+
 // Usage: Pass the username of the profile you want to scrape
 // getProfileStats("cristiano");
 
 if (require.main === module) {
   const args = process.argv.slice(2);
   if (args.length == 1) {
-    getProfileStats(args[0]);
+    // getProfileStats(args[0]);
+    getProfileStatsApi(args[0]);
   } else {
     console.error(
       "Please provide a username  \nUsage: node instagram/profile_stats.js <username>"
@@ -155,4 +196,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = getProfileStats;
+module.exports = getProfileStatsApi;

@@ -21,18 +21,6 @@ async function getProfilePosts(username) {
 
   await new Promise((r) => setTimeout(r, 2000));
 
-  await page.setRequestInterception(true);
-  headers = {};
-
-  // page.on('request', async (interceptedRequest) => {
-  //   if (interceptedRequest.isInterceptResolutionHandled()) return;
-  //   var url = interceptedRequest.url();
-  //   if(url == `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12`){
-  //     headers = interceptedRequest.headers()
-  //   }
-  //   await fs.writeFile('./headers.json', JSON.stringify(headers, null, 2));
-  //   interceptedRequest.continue();
-  // });
   // Go to the user's profile
   await page.goto(`https://www.instagram.com/${username}`, {
     waitUntil: "networkidle2",
@@ -90,6 +78,7 @@ async function getProfilePostsFromApi(username) {
   let fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12`;
   let moreAvailable = true;
   let count = 0;
+  let retryCount = 0;
   do {
     try {
       let posts = [];
@@ -103,6 +92,7 @@ async function getProfilePostsFromApi(username) {
         credentials: "include",
       });
       var body = await res.json();
+      console.log(body);
       body.items.forEach((element) => {
         let likeCount = element.like_count;
         let timeStamp = element.taken_at;
@@ -129,7 +119,7 @@ async function getProfilePostsFromApi(username) {
           user_name: username,
           post_id: element.pk,
           hashtag: "#travelpost",
-          caption: element.caption.text ?? "",
+          caption: element.caption ? element.caption.text : "",
           post_url: element.code,
           storage_url: storageUrl,
           num_comments: commentCount,
@@ -142,20 +132,29 @@ async function getProfilePostsFromApi(username) {
       body.more_available
         ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}`)
         : (moreAvailable = false);
+      count += body.items.length;
       scrapperLogger.info(
         `${count} Profile posts for ${username} fetched successfully`
       );
+      console.log(count);
       await Utils.sleep(100);
       await postDataToMongo(posts);
-      count += body.items.length;
     } catch (e) {
       logger.error(e.toString());
       console.log(e);
+      retryCount++;
+      await Utils.sleep(100);
+      if (retryCount > 2) {
+        moreAvailable = false;
+      }
     }
   } while (moreAvailable);
+
+  if (count < 0) {
+    return Promise.resolve(false);
+  }
   await updateStatus(username);
   return Promise.resolve(true);
-  console.log(posts);
 }
 
 // Usage: Pass the username of the profile you want to scrape
@@ -184,14 +183,14 @@ async function updateStatus(username) {
     method: "POST",
     body: JSON.stringify({
       user_name: username,
-      processing_status: "completed"
+      processing_status: "completed",
     }),
     headers: { "Content-Type": "application/json" },
   };
 
-  try{
+  try {
     let res2 = await fetch(API + "api/tracking/", options2);
-  }catch(e){
+  } catch (e) {
     logger.error(e.toString());
     console.log(e);
   }
@@ -200,6 +199,7 @@ async function updateStatus(username) {
 if (require.main === module) {
   const args = process.argv.slice(2);
   if (args.length == 1) {
+    // getProfilePosts(args[0]);
     getProfilePostsFromApi(args[0]);
   } else {
     console.error(
@@ -207,6 +207,5 @@ if (require.main === module) {
     );
   }
 }
-
 
 module.exports = getProfilePostsFromApi;
