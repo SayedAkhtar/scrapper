@@ -82,6 +82,7 @@ async function getProfilePostsFromApi(username) {
   do {
     try {
       let posts = [];
+      let reels = [];
       var res = await fetch(fetchUrl, {
         headers: header,
         referrer: `https://www.instagram.com/${username}/`,
@@ -97,6 +98,7 @@ async function getProfilePostsFromApi(username) {
         let timeStamp = element.taken_at;
         let commentCount = element.comment_count;
         let storageUrl = [];
+        let reelUrl = [];
         let commentsData = [];
         if ("carousel_media" in element) {
           let images = element.carousel_media;
@@ -104,8 +106,11 @@ async function getProfilePostsFromApi(username) {
             storageUrl.push(e.image_versions2.candidates[0].url);
           });
         }
+        if("video_versions" in element){
+          storageUrl.push(element.video_versions[0].url);
+        }
         if ("image_versions2" in element) {
-          storageUrl.push(element.image_versions2.candidates[0].url);
+          reelUrl.push(element.image_versions2.candidates[0].url);
         }
         if ("preview_comments" in element) {
           let comments = element.preview_comments;
@@ -127,6 +132,21 @@ async function getProfilePostsFromApi(username) {
           comments: commentsData,
         };
         posts.push(data);
+
+        let reelsData = {
+            "user_id": 3, 
+            "user_name": username, 
+            "reel_id": element.pk, 
+            "hashtag": "", 
+            "caption": element.caption ? element.caption.text : "", 
+            "reel_url": reelUrl, 
+            "storage_url": storageUrl, 
+            "num_comments": commentCount, 
+            "num_likes": likeCount, 
+            "is_sponsored": element.is_paid_partnership, 
+            "comments": commentsData
+        }
+        reels.push(reelsData);
       });
       body.more_available
         ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}`)
@@ -138,6 +158,9 @@ async function getProfilePostsFromApi(username) {
       console.log(count);
       
       await postDataToMongo(posts);
+      if(reels.length > 0){
+        await postReelsDataToMongo(reels);
+      }
       await Utils.sleep(100);
     } catch (e) {
       logger.error(e.toString());
@@ -169,6 +192,29 @@ async function postDataToMongo(req) {
   };
   try {
     let res = await fetch(API + "api/post", options);
+    let data = await res.json();
+    logger.info(`${username} post inserted`)
+    if(res.status == 200){
+      return true;
+    }else{
+      logger.info(`${data}`)
+    }
+    
+  } catch (e) {
+    logger.error(e.toString());
+    console.log(e);
+  }
+  return false;
+}
+
+async function postReelsDataToMongo(req) {
+  const options = {
+    method: "POST",
+    body: JSON.stringify(req),
+    headers: { "Content-Type": "application/json" },
+  };
+  try {
+    let res = await fetch(API + "api/reel", options);
     let data = await res.json();
     logger.info(`${username} post inserted`)
     if(res.status == 200){
