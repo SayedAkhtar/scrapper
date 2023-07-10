@@ -92,7 +92,6 @@ async function getProfilePostsFromApi(username) {
         credentials: "include",
       });
       var body = await res.json();
-      console.log(body);
       body.items.forEach((element) => {
         let likeCount = element.like_count;
         let timeStamp = element.taken_at;
@@ -118,9 +117,9 @@ async function getProfilePostsFromApi(username) {
         let data = {
           user_name: username,
           post_id: element.pk,
-          hashtag: "#travelpost",
+          hashtag: "",
           caption: element.caption ? element.caption.text : "",
-          post_url: element.code,
+          post_url: "https://www.instagram.com/p/"+element.code,
           storage_url: storageUrl,
           num_comments: commentCount,
           num_likes: likeCount,
@@ -170,9 +169,13 @@ async function postDataToMongo(req) {
   try {
     let res = await fetch(API + "api/post", options);
     let data = await res.json();
-    console.log(res.status);
-    console.log(res)
-    return true;
+    logger.info(`${username} post inserted`)
+    if(res.status == 200){
+      return true;
+    }else{
+      logger.info(`${data}`)
+    }
+    
   } catch (e) {
     logger.error(e.toString());
     console.log(e);

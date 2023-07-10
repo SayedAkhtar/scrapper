@@ -16,6 +16,7 @@
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-proxy": "^1.0.2",
     "redis": "^4.6.7",
-    "winston": "^3.9.0"
+    "winston": "^3.9.0",
+    "winston-daily-rotate-file": "^4.7.1"
   }
 }

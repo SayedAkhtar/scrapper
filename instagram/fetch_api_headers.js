@@ -65,15 +65,11 @@ const fetchApiHeaders = async (username = "") => {
         mode: "cors",
         credentials: "include",
       });
-      console.log(res);
       if(res.status == 200){
         var body = await res.json();
         return body.data.user.id;
       }
-      else{
-        console.log("here");
-        await updateStatus(username);
-      }
+      
     }catch (e){
       await updateStatus(username);
       logger.info(`Error while fetching headers for ${username}  : ${e.toString()}}`);
