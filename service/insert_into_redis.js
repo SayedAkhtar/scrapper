@@ -2,10 +2,11 @@ const { API, REFRESH_INTERVAL } = require('../config.js');
 const { createClient } = require('redis');
 const {logger} = require('../logger.js');
 
-async function getUsers() {
+async function getUsers(processing_status = 'none') {
     try{
-        const response = await fetch(API+'/api/tracking?processing_status=none')
+        const response = await fetch(API+'/api/tracking?processing_status='+processing_status)
         const users = await response.json()
+        console.log(users);
         return users
     }catch(e){
         throw e;
@@ -29,5 +30,6 @@ async function insertUsersIntoRedis() {
     }
     
 }
+
 
 insertUsersIntoRedis();
