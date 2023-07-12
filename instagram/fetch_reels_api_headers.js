@@ -4,7 +4,7 @@ const fetch = require("node-fetch");
 const { API } = require("../config");
 const { logger, scrapperLogger } = require("../logger");
 
-const fetchApiHeaders = async (username = "") => {
+const fetchApiReelsHeaders = async (username = "") => {
   const browser = await puppeteer.launch({
     headless: false,
     ignoreHTTPSErrors: true,
@@ -16,10 +16,10 @@ const fetchApiHeaders = async (username = "") => {
     if (interceptedRequest.isInterceptResolutionHandled()) return;
     var url = interceptedRequest.url();
     // console.log(typeof url);
-    if (url.indexOf("?count=12") > 0) {
-      headers = interceptedRequest.headers();
+    if (url.indexOf("user/") > 0) {
+      let headers = interceptedRequest.headers();
       console.log(headers);
-      await fs.writeFile("./headers.json", JSON.stringify(headers, null, 2));
+      await fs.writeFile("./reels_headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();
   });
@@ -39,7 +39,7 @@ const fetchApiHeaders = async (username = "") => {
       await t.click();
     }
   }
-  await page.goto(`https://www.instagram.com/${username}/`, {
+  await page.goto(`https://www.instagram.com/${username}/reels`, {
     waitUntil: "networkidle2",
   });
   await page.evaluate(() => {
@@ -67,6 +67,7 @@ const fetchApiHeaders = async (username = "") => {
       });
       if(res.status == 200){
         var body = await res.json();
+        console.log(body.data.user.id);
         return body.data.user.id;
       }
       
@@ -79,5 +80,6 @@ const fetchApiHeaders = async (username = "") => {
 };
 
 
-module.exports = fetchApiHeaders;
+module.exports = fetchApiReelsHeaders;
 
+fetchApiReelsHeaders("virat.kohli");

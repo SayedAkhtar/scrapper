@@ -6,7 +6,7 @@ const { get } = require("http");
 const { API } = require("../config");
 const { exit } = require("process");
 
-async function getProfilePosts(username) {
+async function getProfileReels(username) {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
@@ -34,7 +34,6 @@ async function getProfilePosts(username) {
 
   const data = await page.evaluate(() => {
     let dataMap = [];
-    console.log("dasdasd");
     const body = document.querySelector(
       "main div:last-child article > div:first-child div"
     ).children;
@@ -68,46 +67,45 @@ async function getProfilePosts(username) {
   await browser.close();
 }
 
-async function getProfilePostsFromApi(username) {
-  const headerString = await fs.readFile("./headers.json");
+async function getProfileReelsFromApi(userId, username) {
+  const headerString = await fs.readFile("./reels_headers.json");
   const header = JSON.parse(headerString);
   const headerObj = Object.entries(header).map(
     ([name, value]) => `${name}=${value}`
   );
   const data = headerObj.join("; ");
 
-  let fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12`;
+  let fetchUrl = `https://www.instagram.com/api/v1/clips/user/`;
   let moreAvailable = true;
   let count = 0;
   let retryCount = 0;
   do {
     try {
-      let posts = [];
+      let reels = [];
+      let origPostBody = "include_feed_video=true&page_size=9&target_user_id="+userId;
+      let postBody = "include_feed_video=true&page_size=9&target_user_id="+userId;
+      
       var res = await fetch(fetchUrl, {
         headers: header,
-        referrer: `https://www.instagram.com/${username}/`,
+        referrer: `https://www.instagram.com/${username}/reels`,
         referrerPolicy: "strict-origin-when-cross-origin",
-        body: null,
-        method: "GET",
+        body: postBody,
+        method: "POST",
         mode: "cors",
         credentials: "include",
       });
       var body = await res.json();
       body.items.forEach((element) => {
+        element = element.media;
         let likeCount = element.like_count;
         let timeStamp = element.taken_at;
         let commentCount = element.comment_count;
         let storageUrl = [];
         let reelUrl = [];
         let commentsData = [];
-        if ("carousel_media" in element) {
-          let images = element.carousel_media;
-          images.forEach((e) => {
-            storageUrl.push(e.image_versions2.candidates[0].url);
-          });
-        }
-        if("video_versions" in element){
-          storageUrl.push(element.video_versions[0].url);
+
+        if ("video_versions" in element) {
+          reelUrl = element.video_versions[0].url;
         }
         if ("image_versions2" in element) {
           storageUrl.push(element.image_versions2.candidates[0].url);
@@ -119,47 +117,34 @@ async function getProfilePostsFromApi(username) {
           });
         }
 
-        let data = {
+        let reelsData = {
+          user_id: userId,
           user_name: username,
-          post_id: element.pk,
+          reel_id: element.pk,
           hashtag: "",
           caption: element.caption ? element.caption.text : "",
-          post_url: "https://www.instagram.com/p/"+element.code,
+          reel_url: reelUrl,
           storage_url: storageUrl,
           num_comments: commentCount,
           num_likes: likeCount,
           is_sponsored: element.is_paid_partnership,
           comments: commentsData,
         };
-        posts.push(data);
-
-        // let reelsData = {
-        //     "user_id": 3, 
-        //     "user_name": username, 
-        //     "reel_id": element.pk, 
-        //     "hashtag": "", 
-        //     "caption": element.caption ? element.caption.text : "", 
-        //     "reel_url": reelUrl, 
-        //     "storage_url": storageUrl, 
-        //     "num_comments": commentCount, 
-        //     "num_likes": likeCount, 
-        //     "is_sponsored": element.is_paid_partnership, 
-        //     "comments": commentsData
-        // }
-        // reels.push(reelsData);
+        reels.push(reelsData);
       });
-      body.more_available
-        ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}`)
+      body.paging_info.more_available
+        ? (postBody = origPostBody+"max_id="+body.paging_info.next_max_id)
         : (moreAvailable = false);
       count += body.items.length;
       scrapperLogger.info(
         `${count} Profile posts for ${username} fetched successfully`
       );
-      console.log(count);
-      
-      var status = await postDataToMongo(posts);
-      if(status){
-        logger.info(`${username} ${count} post inserted`)
+
+      if (reels.length > 0) {
+        let status = await postReelsDataToMongo(reels);
+        if(status){
+          logger.info(`${username} ${count} post inserted`);
+        }
       }
       await Utils.sleep(100);
     } catch (e) {
@@ -184,29 +169,6 @@ async function getProfilePostsFromApi(username) {
 // getProfilePosts("cristiano");
 // getProfilePostsFromApi("cristiano");
 
-async function postDataToMongo(req) {
-  const options = {
-    method: "POST",
-    body: JSON.stringify(req),
-    headers: { "Content-Type": "application/json" },
-  };
-  try {
-    let res = await fetch(API + "api/post", options);
-    let data = await res.json();
-    logger.info(`${req.user_name} post inserted`)
-    if(res.status == 200){
-      return true;
-    }else{
-      logger.info(`${data.toString()}`)
-    }
-    
-  } catch (e) {
-    logger.error(e.toString());
-    console.log(e);
-  }
-  return false;
-}
-
 async function postReelsDataToMongo(req) {
   const options = {
     method: "POST",
@@ -216,13 +178,12 @@ async function postReelsDataToMongo(req) {
   try {
     let res = await fetch(API + "api/reel", options);
     let data = await res.json();
-    if(res.status == 200 || res.status == 201){
+    if (res.status == 201) {
       return true;
-    }else{
-      console.log(options);
-      logger.info(`${data.toString()}`)
+    } else {
+      console.log(data);
+      logger.info(`${data.message}`);
     }
-    
   } catch (e) {
     logger.error(e.toString());
     console.log(e);
@@ -250,14 +211,14 @@ async function updateStatus(username) {
 
 if (require.main === module) {
   const args = process.argv.slice(2);
-  if (args.length == 1) {
+  if (args.length == 2) {
     // getProfilePosts(args[0]);
-    getProfilePostsFromApi(args[0]);
+    getProfileReelsFromApi(args[0], args[1]);
   } else {
     console.error(
-      "Please provide a username  \nUsage: node instagram/profile_stats.js <username>"
+      "Please provide a username  \nUsage: node instagram/profile_reels.js <userID> <username>"
     );
   }
 }
 
-module.exports = getProfilePostsFromApi;
+module.exports = getProfileReelsFromApi;
