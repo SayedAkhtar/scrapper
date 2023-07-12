@@ -6,6 +6,7 @@ const getProfilePostsFromApi = require("../instagram/profile_posts.js");
 const { sleep } = require("../helpers/Utils.js");
 const { REFRESH_INTERVAL } = require("../config.js");
 const { spawn } = require("child_process");
+const fetchApiReelsHeaders = require("../instagram/fetch_reels_api_headers.js");
 
 async function init() {
   let users = [];
@@ -19,16 +20,14 @@ async function init() {
       const keys = await client.KEYS("*");
       console.log(keys);
       if (keys != undefined && keys.length > 0) {
-        // console.log(keys[0].indexOf(':'))
-        const user = keys[0].slice(keys[0].indexOf(':')+1);
-        await client.del("USER:" + user);
+        const user = keys[0].split(":")[1];
         let userId = await fetchApiHeaders(user);
-        if(userId){
-          let status = await getProfileStatsApi(userId);
-          console.log(status);
-          logger.info(`User ${user} deleted from redis`);
-          childPostDetails(user);
-        }
+        let res = await fetchApiReelsHeaders(user); 
+        let status = await getProfileStatsApi(userId);
+        await client.del("USER:" + user);
+        logger.info(`User ${user} deleted from redis`);
+        childPostDetails(user);
+        childReels(userId, user);
       } else {
         logger.info(`User ${user} Somthig Wrong fettching data`);
         console.log("No users in redis");
@@ -68,6 +67,31 @@ const childPostDetails = (username) => {
     if (signal) {
       console.log("Process killed with signal : " + signal);
       logger.info(`${username} (Post Scrapper) | Process killed with signal : ${signal}`);
+    }
+  });
+};
+
+const childReels = (userId, username) => {
+  const child = spawn("node", ["instagram/profile_reels.js", userId, username]);
+
+  child.stdout.on("data", (data) => {
+    logger.info(`${username} (Reels Scrapper): ${data}`);
+    console.log("StdOut : " + data);
+  });
+
+  child.stderr.on("data", (data) => {
+    logger.info(`${username} (Reels Scrapper): ${data}`);
+    console.log("StdError : " + data);
+  });
+
+  child.on("exit", (code, signal) => {
+    if (code) {
+      logger.info(`${username} (Reels Scrapper) | Process exited with code : ${code}`);
+      console.log("Process exited with code : " + code);
+    }
+    if (signal) {
+      console.log("Process killed with signal : " + signal);
+      logger.info(`${username} (Reels Scrapper) | Process killed with signal : ${signal}`);
     }
   });
 };

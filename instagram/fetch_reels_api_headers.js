@@ -4,9 +4,9 @@ const fetch = require("node-fetch");
 const { API } = require("../config");
 const { logger, scrapperLogger } = require("../logger");
 
-const fetchApiHeaders = async (username = "") => {
+const fetchApiReelsHeaders = async (username = "") => {
   const browser = await puppeteer.launch({
-    headless: "new",
+    headless: false,
     ignoreHTTPSErrors: true,
   });
   const page = await browser.newPage();
@@ -16,10 +16,10 @@ const fetchApiHeaders = async (username = "") => {
     if (interceptedRequest.isInterceptResolutionHandled()) return;
     var url = interceptedRequest.url();
     // console.log(typeof url);
-    if (url.indexOf("?count=12") > 0) {
-      headers = interceptedRequest.headers();
+    if (url.indexOf("user/") > 0) {
+      let headers = interceptedRequest.headers();
       console.log(headers);
-      await fs.writeFile("./headers.json", JSON.stringify(headers, null, 2));
+      await fs.writeFile("./reels_headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();
   });
@@ -39,7 +39,7 @@ const fetchApiHeaders = async (username = "") => {
       await t.click();
     }
   }
-  await page.goto(`https://www.instagram.com/${username}/`, {
+  await page.goto(`https://www.instagram.com/${username}/reels`, {
     waitUntil: "networkidle2",
   });
   await page.evaluate(() => {
@@ -67,11 +67,11 @@ const fetchApiHeaders = async (username = "") => {
       });
       if(res.status == 200){
         var body = await res.json();
+        console.log(body.data.user.id);
         return body.data.user.id;
       }
       
     }catch (e){
-      await updateStatus(username);
       logger.info(`Error while fetching headers for ${username}  : ${e.toString()}}`);
     }
   
@@ -79,24 +79,7 @@ const fetchApiHeaders = async (username = "") => {
   
 };
 
-async function updateStatus(username) {
-  const options2 = {
-    method: "POST",
-    body: JSON.stringify({
-      user_name: username,
-      processing_status: "processed",
-    }),
-    headers: { "Content-Type": "application/json" },
-  };
 
-  try {
-    let res2 = await fetch("http://3.110.222.130:5000/api/trackingapi/tracking/", options2);
-    console.log(res2.status);
-  } catch (e) {
-    logger.error(e.toString());
-    console.log(e);
-  }
-}
+module.exports = fetchApiReelsHeaders;
 
-module.exports = fetchApiHeaders;
-
+fetchApiReelsHeaders("virat.kohli");
