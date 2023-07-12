@@ -137,13 +137,13 @@ async function getProfileReelsFromApi(userId, username) {
         : (moreAvailable = false);
       count += body.items.length;
       scrapperLogger.info(
-        `${count} Profile posts for ${username} fetched successfully`
+        `${count} Profile reels for ${username} fetched successfully`
       );
 
       if (reels.length > 0) {
         let status = await postReelsDataToMongo(reels);
         if(status){
-          logger.info(`${username} ${count} post inserted`);
+          scrapperLogger.info(`${username} ${count} reels inserted`);
         }
       }
       await Utils.sleep(100);
@@ -178,7 +178,8 @@ async function postReelsDataToMongo(req) {
   try {
     let res = await fetch(API + "api/reel", options);
     let data = await res.json();
-    if (res.status == 201) {
+    console.log(res);
+    if (res.status == 201 || res.status == 200) {
       return true;
     } else {
       console.log(data);

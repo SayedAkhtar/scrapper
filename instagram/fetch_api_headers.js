@@ -18,7 +18,6 @@ const fetchApiHeaders = async (username = "") => {
     // console.log(typeof url);
     if (url.indexOf("?count=12") > 0) {
       headers = interceptedRequest.headers();
-      console.log(headers);
       await fs.writeFile("./headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();

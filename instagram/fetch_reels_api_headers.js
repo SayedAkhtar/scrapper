@@ -6,7 +6,7 @@ const { logger, scrapperLogger } = require("../logger");
 
 const fetchApiReelsHeaders = async (username = "") => {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: "new",
     ignoreHTTPSErrors: true,
   });
   const page = await browser.newPage();
@@ -18,7 +18,6 @@ const fetchApiReelsHeaders = async (username = "") => {
     // console.log(typeof url);
     if (url.indexOf("user/") > 0) {
       let headers = interceptedRequest.headers();
-      console.log(headers);
       await fs.writeFile("./reels_headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();
@@ -82,4 +81,4 @@ const fetchApiReelsHeaders = async (username = "") => {
 
 module.exports = fetchApiReelsHeaders;
 
-fetchApiReelsHeaders("virat.kohli");
+// fetchApiReelsHeaders("virat.kohli");

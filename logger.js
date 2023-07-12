@@ -11,13 +11,13 @@ const getLabel = function (callingModule) {
   return parts[parts.length - 2] + '/' + parts.pop();
 };
 
-// const dailyRotateFileTransport = filename => new transports.DailyRotateFile({
-//   filename: `${logDir}/%DATE%-${filename}.log`,
-//   maxSize: "1g",
-//   maxDays: "3d",
-//   zippedArchive: true,
-//   datePattern: 'YYYY-MM-DD'
-// });
+const dailyRotateFileTransport = filename => new transports.DailyRotateFile({
+  filename: `${logDir}/%DATE%-${filename}.log`,
+  maxSize: "1g",
+  maxDays: "3d",
+  zippedArchive: true,
+  datePattern: 'YYYY-MM-DD'
+});
 
 // const customFormat = printf(({ level, message, timestamp, stack }) => {
 //   return `${timestamp} [${level}] ${file_path}: ${stack || message}`;
@@ -25,13 +25,12 @@ const getLabel = function (callingModule) {
 
 const logger = createLogger({
    levels: config.syslog.levels,
-   defaultMeta: { component: 'user-service' },
+   defaultMeta: { component: 'system-service' },
    format: combine(
        timestamp({
            format: 'YYYY-MM-DD HH:mm:ss'
        }),
-       format.splat(),
-       format.errors({stack: true})
+       json()
       //  customFormat
      ),
   
@@ -41,7 +40,7 @@ const logger = createLogger({
         label: getLabel(module),
         colorize: true,
       }),
-       new transports.File({ filename: 'error.log' })
+       new transports.File({ filename: 'error.log' }),
       //  dailyRotateFileTransport('error')
      ]
  });
