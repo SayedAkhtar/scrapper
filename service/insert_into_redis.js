@@ -62,4 +62,23 @@ function runAtSpecificTimeOfDay(hour, minutes, func) {
 }
 
 
-runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
+()=> runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
+
+// if (require.main === module) {
+//     const args = process.argv.slice(2);
+//     if (args.length == 1) {
+//         if(args[0] == "daily"){
+//             insertUsersIntoRedisOnce();
+//         }
+//         else{
+//             insertUsersIntoRedis();
+//         }
+//     } else {
+//       console.error(
+//         "Please provide a username  \nUsage: node service/insert_into_redis.js (daily or minutes)"
+//       );
+//     }
+//   }
+
+insertUsersIntoRedis();
+// insertUsersIntoRedisOnce();

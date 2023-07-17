@@ -103,14 +103,14 @@ async function getProfilePostsFromApi(username) {
         if ("carousel_media" in element) {
           let images = element.carousel_media;
           images.forEach((e) => {
-            storageUrl.push(e.image_versions2.candidates[0].url);
+            storageUrl.push({"url":e.image_versions2.candidates[0].url, "type": "image"});
           });
         }
         if("video_versions" in element){
-          storageUrl.push(element.video_versions[0].url);
+          storageUrl.push({"url":element.video_versions[0].url, "type": "video"});
         }
         if ("image_versions2" in element) {
-          storageUrl.push(element.image_versions2.candidates[0].url);
+          storageUrl.push({"url": element.image_versions2.candidates[0].url, "type": "image"});
         }
         if ("preview_comments" in element) {
           let comments = element.preview_comments;
@@ -130,6 +130,7 @@ async function getProfilePostsFromApi(username) {
           num_likes: likeCount,
           is_sponsored: element.is_paid_partnership,
           comments: commentsData,
+          post_date: element.taken_at,
         };
         posts.push(data);
 

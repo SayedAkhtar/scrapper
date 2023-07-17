@@ -64,13 +64,15 @@ const fetchApiHeaders = async (username = "") => {
         mode: "cors",
         credentials: "include",
       });
+      console.log(res.status);
       if(res.status == 200){
         var body = await res.json();
+        console.log(body.data.user.id);
         return body.data.user.id;
       }
       
     }catch (e){
-      await updateStatus(username);
+      // await updateStatus(username);
       logger.info(`Error while fetching headers for ${username}  : ${e.toString()}}`);
     }
   
@@ -97,5 +99,18 @@ async function updateStatus(username) {
   }
 }
 
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  if (args.length == 1) {
+    // getProfileStats(args[0]);
+    fetchApiHeaders(args[0]);
+  } else {
+    console.error(
+      "Please provide a username  \nUsage: node instagram/fetchApiHeaders.js <username>"
+    );
+  }
+}
+
 module.exports = fetchApiHeaders;
 
+// fetchApiHeaders('alekhyaharika_');

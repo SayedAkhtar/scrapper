@@ -83,7 +83,7 @@ async function postDataToMongo(req) {
       posts: req.postsCount,
       followers: req.followersCount,
       following: req.followingCount,
-      creation_date: date.toJSON().toString(),
+      // creation_date: date.toJSON().toString(),
       is_private: false,
       is_verified: true,
       is_business: false,
