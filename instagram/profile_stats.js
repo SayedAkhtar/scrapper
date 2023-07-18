@@ -61,21 +61,6 @@ async function getProfileStats(username) {
 }
 
 async function postDataToMongo(req) {
-  var date = new Date();
-  // const temp = req.followersCount.split(" ")[0].replace(/[0-9]/g, "");
-  // let followersCount = req.followersCount.replace(/\D/g, "");
-  // if (temp == "M") {
-  //   followersCount = req.followersCount.replace(/\D/g, "") * 1000000;
-  // } else if (temp == "K") {
-  //   followersCount = req.followersCount.replace(/\D/g, "") * 1000;
-  // }
-  // const temp1 = req.followingCount.split(" ")[0].replace(/[0-9]/g, "");
-  // let followingCount = req.followingCount.replace(/\D/g, "");
-  // if (temp1 == "M") {
-  //   followingCount = req.followingCount.replace(/\D/g, "") * 1000000;
-  // } else if (temp1 == "K") {
-  //   followingCount = req.followingCount.replace(/\D/g, "") * 1000;
-  // }
   let user = [
     {
       user_name: req.username,
@@ -95,9 +80,12 @@ async function postDataToMongo(req) {
     body: JSON.stringify(user),
     headers: { "Content-Type": "application/json" },
   };
+  console.log(options);
   try {
     let res = await fetch(API + "api/user", options);
+    console.log(res);
     let data = await res.json();
+    console.log(data);
     scrapperLogger.info(
       `Profile stats for ${req.username} posted successfully`
     );
@@ -128,10 +116,9 @@ async function updateStatus(username) {
   };
 
   try {
-    fetch("http://3.110.222.130:5000/api/tracking", requestOptions)
-      .then((response) => response.text())
-      .then((result) => console.log(result))
-      .catch((error) => console.log("error", error));
+    const res = await fetch("http://13.235.133.141:5000/api/tracking", requestOptions);
+    const body = await res.json();
+    console.log(body);
     scrapperLogger.info(`Status for ${username} updated successfully`);
     return true;
   } catch (e) {
@@ -173,7 +160,7 @@ const getProfileStatsApi = async (userID) => {
       is_business: is_business,
       is_verified: is_verified,
     });
-  
+    scrapperLogger.info(`Profile stats for ${username} found successfully`);
     return updateStatus(username);
   }catch (e){
       logger.info(`Error while fetching Profile Info for ${username}  : ${e.toString()}}`);

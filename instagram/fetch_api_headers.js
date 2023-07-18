@@ -18,6 +18,7 @@ const fetchApiHeaders = async (username = "") => {
     // console.log(typeof url);
     if (url.indexOf("?count=12") > 0) {
       headers = interceptedRequest.headers();
+      console.log(headers);
       await fs.writeFile("./headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();
@@ -44,6 +45,7 @@ const fetchApiHeaders = async (username = "") => {
   await page.evaluate(() => {
     window.scrollTo(0, window.document.body.scrollHeight);
   });
+  await page.screenshot({ path: "example1.png" });
   browser.close();
 
   const headerString = await fs.readFile("./headers.json");
@@ -65,15 +67,22 @@ const fetchApiHeaders = async (username = "") => {
         credentials: "include",
       });
       console.log(res.status);
+      var body = await res.json();
+	console.log(body);
       if(res.status == 200){
-        var body = await res.json();
         console.log(body.data.user.id);
         return body.data.user.id;
+      }else{
+        if(message in body){
+          throw new Error(message);
+        }else{
+          throw new Error(body);
+        }
       }
       
     }catch (e){
       // await updateStatus(username);
-      logger.info(`Error while fetching headers for ${username}  : ${e.toString()}}`);
+      logger.error(`Error while fetching headers for ${username}  : ${e.toString()}}`);
     }
   
     return Promise.resolve(false);
@@ -91,7 +100,7 @@ async function updateStatus(username) {
   };
 
   try {
-    let res2 = await fetch("http://3.110.222.130:5000/api/trackingapi/tracking/", options2);
+    let res2 = await fetch("http://13.235.133.141:5000/api/trackingapi/tracking/", options2);
     console.log(res2.status);
   } catch (e) {
     logger.error(e.toString());

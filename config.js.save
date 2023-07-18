@@ -1,0 +1,5 @@
+const API = 'http://3.110.222.130:5000/';
+const REFRESH_INTERVAL = 300;
+
+exports.API = API;
+exports.REFRESH_INTERVAL = REFRESH_INTERVAL;

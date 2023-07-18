@@ -3,8 +3,8 @@ const fs = require("fs").promises;
 
 // Nmgq9Z4)49h(+W;
 // https://www.instagram.com/_daani.____/
-const USERNAME = "intel_00_00";
-const PASSWORD = "Fxpayservices";
+const USERNAME = "megha_roy493";
+const PASSWORD = "Fxpayservices01";
 
 const loginToInstagram = async () => {
   const browser = await puppeteer.launch({
@@ -12,7 +12,7 @@ const loginToInstagram = async () => {
     args: [
       `--disable-extension-except=/extensions/cookie-blocker`,
       `--load-extension=/extensions/cookie-blocker`,
-      '--proxy-server=http://49.51.184.233:8080'
+      '--proxy-server=http://172.245.159.177:80'
     ]
   });
   const page = await browser.newPage();
@@ -21,6 +21,7 @@ const loginToInstagram = async () => {
   );
   await page.setViewport({ width: 1366, height: 768 });
   await page.goto("https://instagram.com", { waitUntil: "networkidle2" });
+  await page.screenshot({ path: "example.png" });
   await page.waitForSelector('input[name="username"]');
   await page.waitForSelector('input[name="password"]');
   await page.waitForSelector('button[type="submit"]');
@@ -28,7 +29,7 @@ const loginToInstagram = async () => {
   // const [element] = await page.$x('/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[1]');
   // await element.click();
   // await page.waitForNavigation();
-  await page.screenshot({ path: "example.png" });
+  
   await page.type('input[name="username"]', USERNAME);
   await page.type('input[name="password"]', PASSWORD);
   await page.screenshot({ path: "step1.png" });

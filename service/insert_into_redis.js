@@ -80,5 +80,5 @@ function runAtSpecificTimeOfDay(hour, minutes, func) {
 //     }
 //   }
 
-insertUsersIntoRedis();
-// insertUsersIntoRedisOnce();
+// insertUsersIntoRedis();
+insertUsersIntoRedisOnce();
