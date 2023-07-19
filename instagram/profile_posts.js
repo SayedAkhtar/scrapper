@@ -208,29 +208,6 @@ async function postDataToMongo(req) {
   return false;
 }
 
-async function postReelsDataToMongo(req) {
-  const options = {
-    method: "POST",
-    body: JSON.stringify(req),
-    headers: { "Content-Type": "application/json" },
-  };
-  try {
-    let res = await fetch(API + "api/reel", options);
-    let data = await res.json();
-    if(res.status == 200 || res.status == 201){
-      return true;
-    }else{
-      console.log(options);
-      logger.info(`${data.toString()}`)
-    }
-    
-  } catch (e) {
-    logger.error(e.toString());
-    console.log(e);
-  }
-  return false;
-}
-
 async function updateStatus(username) {
   const options2 = {
     method: "POST",

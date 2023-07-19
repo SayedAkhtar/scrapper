@@ -79,11 +79,11 @@ async function getProfileReelsFromApi(userId, username) {
   let moreAvailable = true;
   let count = 0;
   let retryCount = 0;
+  let origPostBody = "include_feed_video=true&page_size=9&target_user_id="+userId;
+  let postBody = "include_feed_video=true&page_size=9&target_user_id="+userId;
   do {
     try {
       let reels = [];
-      let origPostBody = "include_feed_video=true&page_size=9&target_user_id="+userId;
-      let postBody = "include_feed_video=true&page_size=9&target_user_id="+userId;
       
       var res = await fetch(fetchUrl, {
         headers: header,
@@ -133,9 +133,12 @@ async function getProfileReelsFromApi(userId, username) {
         };
         reels.push(reelsData);
       });
-      body.paging_info.more_available
-        ? (postBody = origPostBody+"max_id="+body.paging_info.next_max_id)
-        : (moreAvailable = false);
+      if(body.paging_info.more_available){
+        postBody = origPostBody+"&max_id="+body.paging_info.max_id;
+      }else{
+        moreAvailable = false;
+        // break;
+      }
       count += body.items.length;
       scrapperLogger.info(
         `${count} Profile reels for ${username} fetched successfully`

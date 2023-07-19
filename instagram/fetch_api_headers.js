@@ -18,7 +18,6 @@ const fetchApiHeaders = async (username = "") => {
     // console.log(typeof url);
     if (url.indexOf("?count=12") > 0) {
       headers = interceptedRequest.headers();
-      console.log(headers);
       await fs.writeFile("./headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();
@@ -100,7 +99,7 @@ async function updateStatus(username) {
   };
 
   try {
-    let res2 = await fetch("http://13.235.133.141:5000/api/trackingapi/tracking/", options2);
+    let res2 = await fetch(API+"api/trackingapi/tracking/", options2);
     console.log(res2.status);
   } catch (e) {
     logger.error(e.toString());

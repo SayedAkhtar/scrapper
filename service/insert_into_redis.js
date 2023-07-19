@@ -4,9 +4,9 @@ const { logger } = require('../logger.js');
 
 async function getUsers(processing_status = 'none') {
     try {
-        const response = await fetch(API + '/api/tracking?processing_status=' + processing_status)
+        const response = await fetch(API + 'api/tracking?processing_status=' + processing_status)
         const users = await response.json()
-        console.log(users);
+        console.log(users, processing_status);
         return users
     } catch (e) {
         throw e;
@@ -80,5 +80,5 @@ function runAtSpecificTimeOfDay(hour, minutes, func) {
 //     }
 //   }
 
-// insertUsersIntoRedis();
-insertUsersIntoRedisOnce();
+insertUsersIntoRedis();
+// insertUsersIntoRedisOnce();

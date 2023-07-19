@@ -116,7 +116,7 @@ async function updateStatus(username) {
   };
 
   try {
-    const res = await fetch("http://13.235.133.141:5000/api/tracking", requestOptions);
+    const res = await fetch(API+"api/tracking", requestOptions);
     const body = await res.json();
     console.log(body);
     scrapperLogger.info(`Status for ${username} updated successfully`);

@@ -1,16 +1,13 @@
 {
-  "x-ig-www-claim": "hmac.AR2QRD8Xmh1gFP7FZbPU5_hBFks8wO62-IJBGQFR5TrklI0F",
-  "x-instagram-ajax": "1007849776",
+  "x-ig-www-claim": "hmac.AR012fqPjFQXoD804lpXu0nYIQiKCDdxfSFAre3dt3tGhCLN",
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36",
   "viewport-width": "1366",
-  "content-type": "application/x-www-form-urlencoded",
   "accept": "*/*",
-  "referer": "https://www.instagram.com/forestmanofindia/reels/",
+  "referer": "https://www.instagram.com/alekhyaharika_/reels/",
   "x-requested-with": "XMLHttpRequest",
   "x-asbd-id": "129477",
-  "x-csrftoken": "G6c5AxxSmgbeTKG6FN3SfMtVjaPic1hZ",
+  "x-csrftoken": "6U6JpOu5uULIN8TsO9OyCkKWBDXZ9ZMJ",
   "sec-ch-prefers-color-scheme": "light",
   "x-ig-app-id": "936619743392459",
-  "cookie": "sessionid=59963506717%3AGezu6qvWufvBPf%3A27%3AAYcx0RfLGd7fBSRceLf2evHgLW0X5sZtUPOVRruVTA; mid=ZLVSsgALAAFIeMQ6BDClnDqDgMQ8; csrftoken=G6c5AxxSmgbeTKG6FN3SfMtVjaPic1hZ; ig_nrcb=1; datr=sVK1ZNTtsqIcowT9CSCXoS58; ds_user_id=59963506717; ig_did=828E1E0B-103C-4301-ACEB-5782B8369A93; rur=\"RVA\\05459963506717\\0541721156699:01f78ce71bdf9b2cf3bd56bf96f93c894193a5d5f1cfe878210fb80caed2fbe5a5dffe8a\"",
-  "origin": "https://www.instagram.com"
+  "cookie": "sessionid=60169298575%3Au8m1oAFH4iz2Ww%3A4%3AAYfhtabFjGBL5lZBm0U3bP2O2lmBolEsb-z1qXgWYQ; mid=ZLc2EQALAAFJ3sTIAGKsvEs5QL8r; csrftoken=6U6JpOu5uULIN8TsO9OyCkKWBDXZ9ZMJ; ig_nrcb=1; datr=Bza3ZM_ioWkgfjhOvAkMz8g3; ds_user_id=60169298575; ig_did=EC21179B-83E8-4B32-8844-6FFB23A609CA; rur=\"CLN\\05460169298575\\0541721302857:01f7c75ecbbd9e36e3d946c9afebd71994c5c03ff93eadd0054766ea8ef9e089d236984c\""
 }
