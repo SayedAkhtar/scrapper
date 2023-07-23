@@ -1,5 +1,5 @@
 const { createClient } = require("redis");
-const { logger } = require("../logger.js");
+const { logger, scrapperLogger } = require("../logger.js");
 const getProfileStatsApi = require("../instagram/profile_stats.js");
 const fetchApiHeaders = require("../instagram/fetch_api_headers.js");
 const getProfilePostsFromApi = require("../instagram/profile_posts.js");
@@ -25,11 +25,11 @@ async function init() {
         let res = await fetchApiReelsHeaders(user); 
         let status = await getProfileStatsApi(userId);
         await client.del("USER:" + user);
-        logger.info(`User ${user} deleted from redis`);
+        scrapperLogger.info(`User ${user} deleted from redis`);
         childPostDetails(user);
         childReels(userId, user);
       } else {
-        logger.info(`User ${user} Somthig Wrong fettching data`);
+        logger.info("No users in redis");
         console.log("No users in redis");
       }
     },100 *  1000);
@@ -73,7 +73,7 @@ const childPostDetails = (username) => {
 
 const childReels = (userId, username) => {
   const child = spawn("node", ["instagram/profile_reels.js", userId, username]);
-
+  console.log("Called");
   child.stdout.on("data", (data) => {
     logger.info(`${username} (Reels Scrapper): ${data}`);
     console.log("StdOut : " + data);

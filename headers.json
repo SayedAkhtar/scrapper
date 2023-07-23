@@ -1,13 +1,13 @@
 {
-  "x-ig-www-claim": "hmac.AR012fqPjFQXoD804lpXu0nYIQiKCDdxfSFAre3dt3tGhDMJ",
+  "x-ig-www-claim": "hmac.AR1OWgp4Hlhd1wS5Y-1wIQWfMy58_22cXtnnXg-plw194R0a",
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36",
   "viewport-width": "1366",
   "accept": "*/*",
   "referer": "https://www.instagram.com/alekhyaharika_/",
   "x-requested-with": "XMLHttpRequest",
   "x-asbd-id": "129477",
-  "x-csrftoken": "6U6JpOu5uULIN8TsO9OyCkKWBDXZ9ZMJ",
+  "x-csrftoken": "ZVwDnZl61scHmufXjgouxsPMQ0q965Ow",
   "sec-ch-prefers-color-scheme": "light",
   "x-ig-app-id": "936619743392459",
-  "cookie": "sessionid=60169298575%3Au8m1oAFH4iz2Ww%3A4%3AAYfhtabFjGBL5lZBm0U3bP2O2lmBolEsb-z1qXgWYQ; mid=ZLc2EQALAAFJ3sTIAGKsvEs5QL8r; csrftoken=6U6JpOu5uULIN8TsO9OyCkKWBDXZ9ZMJ; ig_nrcb=1; datr=Bza3ZM_ioWkgfjhOvAkMz8g3; ds_user_id=60169298575; ig_did=EC21179B-83E8-4B32-8844-6FFB23A609CA; rur=\"CLN\\05460169298575\\0541721302849:01f731afbf5ef6e48662063e6830edc807d75a956e365eb293e3ae22faa452a160ff669d\""
+  "cookie": "csrftoken=ZVwDnZl61scHmufXjgouxsPMQ0q965Ow; mid=ZLoFwwALAAELPjNIuiF59OM8_ITS; ig_nrcb=1; datr=wgW6ZAEPk56Y3UAvfAWcnNms; ds_user_id=60283501527; ig_did=8622FAC1-129D-42B5-B357-0F2396B7F271; dpr=1; rur=\"CLN\\05460283501527\\0541721536346:01f7b08fd6ac4cd0ca91eb666c2cacc234a7fccf0c04bf762f7dfb822e3991572829fdd3\""
 }

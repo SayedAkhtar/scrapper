@@ -21,7 +21,7 @@ async function insertUsersIntoRedis(status = 'none') {
         setInterval(async () => {
             const users = await getUsers(status);
             users.forEach(async user => {
-                await client.set("USER:" + user.user_name, user.processing_status, {EX: REFRESH_INTERVAL});
+                await client.set("USER:" + user.user_name, user.processing_status);
             });
             console.log("Users inserted into redis");
         }, REFRESH_INTERVAL * 1000);

@@ -66,4 +66,27 @@ const logger = createLogger({
     ]
 });
 
- module.exports = {logger, scrapperLogger};
+const apiLogger = createLogger({
+  levels: config.syslog.levels,
+  defaultMeta: { component: 'user-service' },
+  format: combine(
+      timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss'
+      }),
+      json()
+    ),
+ 
+  transports: [
+      new transports.Console({
+        level: 'debug',
+       label: getLabel(module),
+       colorize: true,
+     }),
+      new transports.File({ filename: 'api_logs.log' }),
+      // dailyRotateFileTransport('scrapper_logs')
+    ]
+})
+
+
+
+ module.exports = {logger, scrapperLogger, apiLogger};

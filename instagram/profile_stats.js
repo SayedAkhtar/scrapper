@@ -137,7 +137,7 @@ const getProfileStatsApi = async (userID) => {
   const data = headerObj.join("; ");
 
   let fetchUrl = `https://www.instagram.com/api/v1/users/${userID}/info/`;
-
+    console.log("here");
   try{
     var res = await fetch(fetchUrl, {
       headers: header,
@@ -148,7 +148,9 @@ const getProfileStatsApi = async (userID) => {
       mode: "cors",
       credentials: "include",
     });
+    console.log(res.status);
     var body = await res.json();
+    console.log(body);
     var { follower_count, following_count, media_count, full_name, username, is_private, is_verified, is_business  } = body.user;
     var res = await postDataToMongo({
       username: username,
@@ -161,6 +163,7 @@ const getProfileStatsApi = async (userID) => {
       is_verified: is_verified,
     });
     scrapperLogger.info(`Profile stats for ${username} found successfully`);
+    console.log("dada");
     return updateStatus(username);
   }catch (e){
       logger.info(`Error while fetching Profile Info for ${username}  : ${e.toString()}}`);
@@ -176,6 +179,7 @@ if (require.main === module) {
   if (args.length == 1) {
     // getProfileStats(args[0]);
     getProfileStatsApi(args[0]);
+    console.log("running");
   } else {
     console.error(
       "Please provide a username  \nUsage: node instagram/profile_stats.js <username>"

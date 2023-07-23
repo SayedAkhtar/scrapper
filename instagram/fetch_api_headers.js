@@ -18,6 +18,7 @@ const fetchApiHeaders = async (username = "") => {
     // console.log(typeof url);
     if (url.indexOf("?count=12") > 0) {
       headers = interceptedRequest.headers();
+      console.log(headers);
       await fs.writeFile("./headers.json", JSON.stringify(headers, null, 2));
     }
     interceptedRequest.continue();
@@ -66,8 +67,8 @@ const fetchApiHeaders = async (username = "") => {
         credentials: "include",
       });
       console.log(res.status);
+      console.log(res);
       var body = await res.json();
-	console.log(body);
       if(res.status == 200){
         console.log(body.data.user.id);
         return body.data.user.id;
