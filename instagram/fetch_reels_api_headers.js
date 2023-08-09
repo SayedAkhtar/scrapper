@@ -81,4 +81,4 @@ const fetchApiReelsHeaders = async (username = "") => {
 
 module.exports = fetchApiReelsHeaders;
 
-// fetchApiReelsHeaders("virat.kohli");
+fetchApiReelsHeaders("virat.kohli");

@@ -2,28 +2,25 @@ const puppeteer = require("puppeteer-extra");
 const fs = require("fs").promises;
 const Utils = require('./helpers/Utils')
 const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha')
-puppeteer.use(
-  RecaptchaPlugin({
-    provider: {
-      id: '2captcha',
-      token: '819d06a591934f851e0b973198711fd5' // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
-    },
-    visualFeedback: true // colorize reCAPTCHAs (violet = detected, green = solved)
-  })
-)
-// Nmgq9Z4)49h(+W;
-// https://www.instagram.com/_daani.____/
-const USERNAME = "nandhini123156";
-const PASSWORD = "Fxpayservices";
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+
+const USERNAME = "g290050632";
+const PASSWORD = "Fxpros@9";
 
 // puppeteerExtra.use(StealthPlugin());
 const loginToInstagram = async () => {
+  puppeteer.use(
+    RecaptchaPlugin({
+      provider: {
+        id: '2captcha',
+        token: '819d06a591934f851e0b973198711fd5'
+      },
+      visualFeedback: true
+    })
+  )
+  puppeteer.use(StealthPlugin());  
   const browser = await puppeteer.launch({
-    headless: "new",
-    args: [
-      `--disable-extension-except=/extensions/cookie-blocker`,
-      `--load-extension=/extensions/cookie-blocker`,
-    ]
+    headless: false,
   });
   const page = await browser.newPage();
   await page.setUserAgent(
@@ -45,16 +42,13 @@ const loginToInstagram = async () => {
     if(e[0] == undefined){
       moveForward = true;
     }
-    await Utils.sleep(2);
+    await Utils.sleep(1);
   }while(!moveForward)
 
   await page.waitForSelector('input[name="username"]');
   await page.waitForSelector('input[name="password"]');
   await page.waitForSelector('button[type="submit"]');
   console.log("Page loaded");
-  // const [element] = await page.$x('/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[1]');
-  // await element.click();
-  // await page.waitForNavigation();
   
   await page.type('input[name="username"]', USERNAME);
   await page.type('input[name="password"]', PASSWORD);
@@ -64,24 +58,28 @@ const loginToInstagram = async () => {
   await page.waitForNavigation();
   await page.screenshot({ path: "step3.png" }); 
 
-  for (const frame of page.mainFrame().childFrames()) {
-    // Attempt to solve any potential captchas in those frames
-    await frame.solveRecaptchas()
-  }
-
-
-await Promise.all([
-// page.waitForNavigation(),
-page.click(`button[type="button"]`)
-])
+  // for (const frame of page.mainFrame().childFrames()) {
+  //   // Attempt to solve any potential captchas in those frames
+  //   await frame.solveRecaptchas()
+  // }
+  // await Promise.all([
+  // // page.waitForNavigation(),
+  // page.click(`button[type="button"]`)
+  // ])
   
-  await page.goto("https://www.instagram.com/", { waitUntil: "networkidle2" });
-  await page.waitForNavigation();
+  await page.goto("https://www.instagram.com/"+USERNAME, { waitUntil: "networkidle2" });
+  await Utils.sleep(1);
+  const f = await page.$('main header h2');
+  const text = await (await f.getProperty('textContent')).jsonValue()
+  console.log(text);
+  if(text == USERNAME){
+    console.log("Login Success");
+  }else{
+    console.log("Login Failed");
+  }
   await page.screenshot({ path: "step4.png" });
   const cookies = await page.cookies();
-  console.log(cookies);
   await fs.writeFile("./cookies.json", JSON.stringify(cookies, null, 2));
-
   await browser.close();
 };
 

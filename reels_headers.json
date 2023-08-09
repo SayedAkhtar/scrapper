@@ -1,13 +1,16 @@
 {
-  "x-ig-www-claim": "hmac.AR3bCkknfbEk2bxP7Hh03Gu10OjfoBLCtthEtOf2g8dyDusJ",
+  "x-ig-www-claim": "hmac.AR10tAZemMeMaHV4EiNr7MdZIiOnhDZBNXV4vSWqakpqQeyR",
+  "x-instagram-ajax": "1008003175",
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36",
   "viewport-width": "1366",
+  "content-type": "application/x-www-form-urlencoded",
   "accept": "*/*",
-  "referer": "https://www.instagram.com/eniyan_s/reels",
+  "referer": "https://www.instagram.com/virat.kohli/reels",
   "x-requested-with": "XMLHttpRequest",
   "x-asbd-id": "129477",
-  "x-csrftoken": "fg4VwAxbAUg9CbMWP6fjvDAGgxFZDHgn",
+  "x-csrftoken": "9FYKJjunoBdcM5Ho5V4YOMTz2mUHnv4K",
   "sec-ch-prefers-color-scheme": "light",
   "x-ig-app-id": "936619743392459",
-  "cookie": "sessionid=61068898912%3AWd77vzdQklKn7X%3A28%3AAYcpMyW7f2hy0cgJmtaSHowaGZS6DJqXploN1ilFJw; csrftoken=fg4VwAxbAUg9CbMWP6fjvDAGgxFZDHgn; ig_nrcb=1; datr=R9nQZCMjuHww1AgEm77OczRg; ds_user_id=61068898912; ig_did=392D0DC8-9107-4863-B7F7-4F07450C040D; mid=ZNDZSQALAAHXQva-9_IBkGwFsdXn; dpr=1; rur=\"CLN\\05461068898912\\0541723145449:01f75a851e2804f9e8b1b393715f88a9347c83df22e5545d235593d6eb11e97ab6ad25dc\""
+  "cookie": "sessionid=60925082005%3A9cSB27vnfQ4b32%3A2%3AAYf29RjcncteG3wIbJ-2NXy0yQvlBC5zqfVziaUmGg; mid=ZNPwmgALAAGxgNcghdRXwYvNo7w4; csrftoken=9FYKJjunoBdcM5Ho5V4YOMTz2mUHnv4K; ig_nrcb=1; datr=mfDTZHZtriag-9Lt0Va2JY5J; ds_user_id=60925082005; ig_did=5D16162F-6326-491B-B10C-FBC0301FD84C; rur=\"PRN\\05460925082005\\0541723147568:01f7734c39f184c85986719f69bb4fcab6b298245407cebe2b0d3b664af4e41e3ad92b10\"",
+  "origin": "https://www.instagram.com"
 }

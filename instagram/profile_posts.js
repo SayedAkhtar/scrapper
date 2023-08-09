@@ -5,6 +5,7 @@ const { logger, scrapperLogger } = require("../logger");
 const { get } = require("http");
 const { API } = require("../config");
 const { exit } = require("process");
+const downloadImageAndUploadToS3 = require("../service/download_to_s3");
 
 async function getProfilePosts(username) {
   const browser = await puppeteer.launch({ headless: "new" });
@@ -93,7 +94,7 @@ async function getProfilePostsFromApi(username) {
         credentials: "include",
       });
       var body = await res.json();
-      body.items.forEach((element) => {
+      body.items.forEach(async (element) => {
         let likeCount = element.like_count;
         let timeStamp = element.taken_at;
         let commentCount = element.comment_count;
@@ -102,15 +103,18 @@ async function getProfilePostsFromApi(username) {
         let commentsData = [];
         if ("carousel_media" in element) {
           let images = element.carousel_media;
-          images.forEach((e) => {
-            storageUrl.push({"url":e.image_versions2.candidates[0].url, "type": "image"});
+          images.forEach(async (e) => {
+            const carousel_url = await downloadImageAndUploadToS3(username, element.code, 'post', e.image_versions2.candidates[0].url);
+            storageUrl.push({"url": carousel_url, "type": "image"});
           });
         }
         if("video_versions" in element){
-          storageUrl.push({"url":element.video_versions[0].url, "type": "video"});
+          const reel_url = await downloadImageAndUploadToS3(username, element.code, 'post', element.video_versions[0].url);
+          storageUrl.push({"url":reel_url, "type": "video"});
         }
         if ("image_versions2" in element) {
-          storageUrl.push({"url": element.image_versions2.candidates[0].url, "type": "image"});
+          const post = await downloadImageAndUploadToS3(username, element.code, 'post', element.image_versions2.candidates[0].url);
+          storageUrl.push({"url": post, "type": "image"});
         }
         if ("preview_comments" in element) {
           let comments = element.preview_comments;
@@ -150,7 +154,7 @@ async function getProfilePostsFromApi(username) {
         // reels.push(reelsData);
       });
       body.more_available
-        ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=12&max_id=${body.next_max_id}`)
+        ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=500&max_id=${body.next_max_id}`)
         : (moreAvailable = false);
       count += body.items.length;
       scrapperLogger.info(

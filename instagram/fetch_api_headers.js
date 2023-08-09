@@ -66,8 +66,8 @@ const fetchApiHeaders = async (username = "") => {
         mode: "cors",
         credentials: "include",
       });
-      console.log(res.status);
-      console.log(res);
+
+      console.log(res.statusText);
       
       if(res.status == 200){
         var body = await res.json();
@@ -82,7 +82,7 @@ const fetchApiHeaders = async (username = "") => {
         if(message in body){
           throw new Error(message);
         }else{
-          throw new Error(body);
+          throw new Error(res.statusText);
         }
       }
       
@@ -128,4 +128,4 @@ if (require.main === module) {
 
 module.exports = fetchApiHeaders;
 
-// fetchApiHeaders('alekhyaharika_');
+// fetchApiHeaders('virat.kohli');

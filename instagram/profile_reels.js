@@ -5,6 +5,7 @@ const { logger, scrapperLogger, apiLogger } = require("../logger");
 const { get } = require("http");
 const { API } = require("../config");
 const { exit } = require("process");
+const downloadImageAndUploadToS3 = require("../service/download_to_s3");
 
 async function getProfileReels(username) {
   const browser = await puppeteer.launch({ headless: false });
@@ -79,8 +80,8 @@ async function getProfileReelsFromApi(userId, username) {
   let moreAvailable = true;
   let count = 0;
   let retryCount = 0;
-  let origPostBody = "include_feed_video=true&page_size=9&target_user_id=" + userId;
-  let postBody = "include_feed_video=true&page_size=9&target_user_id=" + userId;
+  let origPostBody = "include_feed_video=true&page_size=500&target_user_id=" + userId;
+  let postBody = "include_feed_video=true&page_size=500&target_user_id=" + userId;
   let lastBatch = [];
   do {
     try {
@@ -100,7 +101,7 @@ async function getProfileReelsFromApi(userId, username) {
       if(res.status != 200){
         throw new Error(body.message);
       }
-      body.items.forEach((element) => {
+      body.items.forEach(async (element) => {
         element = element.media;
         let likeCount = element.like_count;
         let timeStamp = element.taken_at;
@@ -111,9 +112,11 @@ async function getProfileReelsFromApi(userId, username) {
 
         if ("video_versions" in element) {
           reelUrl = element.video_versions[0].url;
+          reelUrl = await downloadImageAndUploadToS3(username, element.code, 'reel', reelUrl);
         }
         if ("image_versions2" in element) {
-          storageUrl.push({ "url": element.image_versions2.candidates[0].url, "type": "image" });
+          const imageUrl = await downloadImageAndUploadToS3(username, element.code, 'post', element.image_versions2.candidates[0].url);
+          storageUrl.push({ "url": imageUrl, "type": "image" });
         }
         if ("preview_comments" in element) {
           let comments = element.preview_comments;
