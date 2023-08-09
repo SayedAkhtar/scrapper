@@ -22,7 +22,7 @@ const dailyRotateFileTransport = filename => new transports.DailyRotateFile({
 // const customFormat = printf(({ level, message, timestamp, stack }) => {
 //   return `${timestamp} [${level}] ${file_path}: ${stack || message}`;
 // });
-
+const DATE = (new Date().toJSON().slice(0,10).split('-').reverse().join('-'));
 const logger = createLogger({
    levels: config.syslog.levels,
    defaultMeta: { component: 'system-service' },
@@ -40,10 +40,11 @@ const logger = createLogger({
         label: getLabel(module),
         colorize: true,
       }),
-       new transports.File({ filename: 'error.log' }),
+       new transports.File({ filename: 'logs/error/'+DATE+'-error.log' }),
       //  dailyRotateFileTransport('error')
      ]
  });
+
 
  const scrapperLogger = createLogger({
   levels: config.syslog.levels,
@@ -61,7 +62,7 @@ const logger = createLogger({
        label: getLabel(module),
        colorize: true,
      }),
-      new transports.File({ filename: 'scrapper_logs.log' }),
+      new transports.File({ filename: 'logs/info/'+DATE+'-scrapper_logs.log' }),
       // dailyRotateFileTransport('scrapper_logs')
     ]
 });
@@ -82,7 +83,7 @@ const apiLogger = createLogger({
        label: getLabel(module),
        colorize: true,
      }),
-      new transports.File({ filename: 'api_logs.log' }),
+      new transports.File({ filename: 'logs/api/'+DATE+'-api_logs.log' }),
       // dailyRotateFileTransport('scrapper_logs')
     ]
 })

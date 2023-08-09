@@ -163,8 +163,9 @@ const getProfileStatsApi = async (userID) => {
       is_verified: is_verified,
     });
     scrapperLogger.info(`Profile stats for ${username} found successfully`);
-    console.log("dada");
-    return updateStatus(username);
+    if(res){
+      return await updateStatus(username);
+    }
   }catch (e){
       logger.info(`Error while fetching Profile Info for ${username}  : ${e.toString()}}`);
   }

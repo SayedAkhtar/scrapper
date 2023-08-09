@@ -1,4 +1,4 @@
-const { API, REFRESH_INTERVAL } = require('../config.js');
+const { API, REFRESH_INTERVAL } = require('./../config');
 const { createClient } = require('redis');
 const { logger } = require('../logger.js');
 
@@ -21,7 +21,11 @@ async function insertUsersIntoRedis(status = 'none') {
         setInterval(async () => {
             const users = await getUsers(status);
             users.forEach(async user => {
-                await client.set("USER:" + user.user_name, user.processing_status);
+                let bool = await client.exists("USER_NOW:" + user.user_name);
+                if(!bool){
+                    await client.set("USER_NOW:" + user.user_name, user.processing_status);
+                }
+                // await client.set("USER_NOW:" + user.user_name, user.processing_status);
             });
             console.log("Users inserted into redis");
         }, REFRESH_INTERVAL * 1000);
@@ -38,7 +42,11 @@ async function insertUsersIntoRedisOnce() {
         await client.connect();
         const users = await getUsers("processed");
         users.forEach(async user => {
-            await client.set("USER:" + user.user_name, user.processing_status);
+            let bool = await client.exists("USER:" + user.user_name);
+            if(!bool){
+                await client.set("USER:" + user.user_name, user.processing_status);
+            }
+            
         });
         console.log("Users inserted into redis");
     } catch (err) {
@@ -62,7 +70,7 @@ function runAtSpecificTimeOfDay(hour, minutes, func) {
 }
 
 
-()=> runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
+runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
 
 // if (require.main === module) {
 //     const args = process.argv.slice(2);
@@ -81,4 +89,4 @@ function runAtSpecificTimeOfDay(hour, minutes, func) {
 //   }
 
 insertUsersIntoRedis();
-// insertUsersIntoRedisOnce();
+insertUsersIntoRedisOnce();

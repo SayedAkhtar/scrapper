@@ -8,6 +8,8 @@ const { REFRESH_INTERVAL } = require("../config.js");
 const { spawn } = require("child_process");
 const fetchApiReelsHeaders = require("../instagram/fetch_reels_api_headers.js");
 
+var POST_THREAD_COUNT = 0;
+var REEL_THREAD_COUNT = 0;
 async function init() {
   let users = [];
   const client = createClient(6379, "127.0.0.1");
@@ -17,25 +19,49 @@ async function init() {
 
   try {
     setInterval(async () => {
-      const keys = await client.KEYS("*");
-      console.log(keys);
-      if (keys != undefined && keys.length > 0) {
+      const keys = await client.KEYS("USER:*");
+      // const keys = undefined;
+      const priority = await client.KEYS("USER_NOW:*");
+      console.table(keys, priority);
+      if (priority.length > 0 && priority != undefined) {
+        const user = priority[0].split(":")[1];
+        let res = await main(user);
+        if(res || (res == -1)){
+          await client.del("USER_NOW:" + user);
+        }
+      }
+      else if (keys != undefined && keys.length > 0) {
         const user = keys[0].split(":")[1];
-        let userId = await fetchApiHeaders(user);
-        let res = await fetchApiReelsHeaders(user); 
-        let status = await getProfileStatsApi(userId);
-        await client.del("USER:" + user);
-        scrapperLogger.info(`User ${user} deleted from redis`);
-        childPostDetails(user);
-        childReels(userId, user);
+        let res = await main(user);
+        if(res || (res == -1)){
+          await client.del("USER:" + user);
+        }
       } else {
         logger.info("No users in redis");
         console.log("No users in redis");
       }
-    },100 *  1000);
+    }, 100 * 1000);
   } catch (err) {
     logger.error(err.toString());
   }
+}
+
+async function main(user) {
+  if((user != "https" || user.length != 0) && (POST_THREAD_COUNT + REEL_THREAD_COUNT < 10)){
+    let userId = await fetchApiHeaders(user);
+    if(userId == -1){
+      return -1;
+    }
+    let res = await fetchApiReelsHeaders(user);
+    let status = await getProfileStatsApi(userId);
+    scrapperLogger.info(`User ${user} deleted from redis`);
+    childPostDetails(user);
+    childReels(userId, user);
+    scrapperLogger.info(`Current POST thread count: ${POST_THREAD_COUNT}`);
+    scrapperLogger.info(`Current REEL thread count: ${REEL_THREAD_COUNT}`);
+    return status;
+  }
+  return false;
 }
 
 async function runner(users) {
@@ -47,6 +73,7 @@ async function runner(users) {
 // init();
 
 const childPostDetails = (username) => {
+  POST_THREAD_COUNT = POST_THREAD_COUNT + 1;
   const child = spawn("node", ["instagram/profile_posts.js", username]);
 
   child.stdout.on("data", (data) => {
@@ -68,12 +95,13 @@ const childPostDetails = (username) => {
       console.log("Process killed with signal : " + signal);
       logger.info(`${username} (Post Scrapper) | Process killed with signal : ${signal}`);
     }
+    POST_THREAD_COUNT = POST_THREAD_COUNT - 1;
   });
 };
 
 const childReels = (userId, username) => {
+  REEL_THREAD_COUNT = REEL_THREAD_COUNT + 1;
   const child = spawn("node", ["instagram/profile_reels.js", userId, username]);
-  console.log("Called");
   child.stdout.on("data", (data) => {
     logger.info(`${username} (Reels Scrapper): ${data}`);
     console.log("StdOut : " + data);
@@ -93,6 +121,7 @@ const childReels = (userId, username) => {
       console.log("Process killed with signal : " + signal);
       logger.info(`${username} (Reels Scrapper) | Process killed with signal : ${signal}`);
     }
+    REEL_THREAD_COUNT = REEL_THREAD_COUNT - 1;
   });
 };
 

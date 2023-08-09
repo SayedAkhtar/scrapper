@@ -71,7 +71,7 @@ const fetchApiReelsHeaders = async (username = "") => {
       }
       
     }catch (e){
-      logger.info(`Error while fetching headers for ${username}  : ${e.toString()}}`);
+      logger.info(`Error while fetching headers for ${username}  : ${e.toString()} | ${e.stack}}`);
     }
   
     return Promise.resolve(false);
@@ -81,4 +81,4 @@ const fetchApiReelsHeaders = async (username = "") => {
 
 module.exports = fetchApiReelsHeaders;
 
-fetchApiReelsHeaders("virat.kohli");
+// fetchApiReelsHeaders("virat.kohli");

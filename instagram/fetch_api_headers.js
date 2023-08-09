@@ -68,11 +68,17 @@ const fetchApiHeaders = async (username = "") => {
       });
       console.log(res.status);
       console.log(res);
-      var body = await res.json();
+      
       if(res.status == 200){
+        var body = await res.json();
         console.log(body.data.user.id);
         return body.data.user.id;
-      }else{
+      }else if(res.status == 404){
+        console.log("Not found");
+        return Promise.resolve(-1);
+      }
+      else{
+        var body = await res.json();
         if(message in body){
           throw new Error(message);
         }else{
@@ -82,7 +88,7 @@ const fetchApiHeaders = async (username = "") => {
       
     }catch (e){
       // await updateStatus(username);
-      logger.error(`Error while fetching headers for ${username}  : ${e.toString()}}`);
+      logger.error(`Error while fetching headers for ${username}  : ${e.toString()} | ${e.stack}}`);
     }
   
     return Promise.resolve(false);
