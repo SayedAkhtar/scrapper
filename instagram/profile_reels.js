@@ -80,8 +80,8 @@ async function getProfileReelsFromApi(userId, username) {
   let moreAvailable = true;
   let count = 0;
   let retryCount = 0;
-  let origPostBody = "include_feed_video=true&page_size=500&target_user_id=" + userId;
-  let postBody = "include_feed_video=true&page_size=500&target_user_id=" + userId;
+  let origPostBody = "include_feed_video=true&page_size=200&target_user_id=" + userId;
+  let postBody = "include_feed_video=true&page_size=200&target_user_id=" + userId;
   let lastBatch = [];
   do {
     try {
@@ -109,13 +109,15 @@ async function getProfileReelsFromApi(userId, username) {
         let storageUrl = [];
         let reelUrl = [];
         let commentsData = [];
-
+        let s3_storage_url = [];
         if ("video_versions" in element) {
           reelUrl = element.video_versions[0].url;
-          reelUrl = await downloadImageAndUploadToS3(username, element.code, 'reel', reelUrl);
+          // let sreelUrl = await downloadImageAndUploadToS3(username, element.code, 'reel', reelUrl);
+          // s3_storage_url.push({ "url": sreelUrl, "type": "reel" });
         }
         if ("image_versions2" in element) {
-          const imageUrl = await downloadImageAndUploadToS3(username, element.code, 'post', element.image_versions2.candidates[0].url);
+          const imageUrl = element.image_versions2.candidates[0].url;
+          // s3_storage_url.push({ "url": imageUrl, "type": "image" });
           storageUrl.push({ "url": imageUrl, "type": "image" });
         }
         if ("preview_comments" in element) {
@@ -129,7 +131,7 @@ async function getProfileReelsFromApi(userId, username) {
           let reelsData = {
             user_id: userId,
             user_name: username,
-            reel_id: element.pk,
+            reel_id: reelUrl.match(/\/reel\/([A-Za-z0-9_-]+)/)[1], //element.pk,
             hashtag: "",
             caption: element.caption ? element.caption.text : "",
             reel_url: reelUrl,
@@ -139,6 +141,7 @@ async function getProfileReelsFromApi(userId, username) {
             is_sponsored: element.is_paid_partnership,
             comments: commentsData,
             post_date: element.taken_at,
+            s3_storage_url:s3_storage_url
           };
           reels.push(reelsData);
         }

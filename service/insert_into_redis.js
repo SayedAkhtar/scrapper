@@ -35,25 +35,24 @@ async function insertUsersIntoRedis(status = 'none') {
 
 }
 
-async function insertUsersIntoRedisOnce() {
-    try {
-        const client = createClient(6379, '127.0.0.1');
-        client.on('error', err => console.log('Redis Client Error', err));
-        await client.connect();
-        const users = await getUsers("processed");
-        users.forEach(async user => {
-            let bool = await client.exists("USER:" + user.user_name);
-            if(!bool){
-                await client.set("USER:" + user.user_name, user.processing_status);
-            }
+// async function insertUsersIntoRedisOnce() {
+//     try {
+//         const client = createClient(6379, '127.0.0.1');
+//         client.on('error', err => console.log('Redis Client Error', err));
+//         await client.connect();
+//         const users = await getUsers("processed");
+//         users.forEach(async user => {
+//             let bool = await client.exists("USER:" + user.user_name);
+//             if(!bool){
+//                 await client.set("USER:" + user.user_name, user.processing_status);
+//             }
             
-        });
-        console.log("Users inserted into redis");
-    } catch (err) {
-        logger.error(err.toString());
-    }
-
-}
+//         });
+//         console.log("Users inserted into redis");
+//     } catch (err) {
+//         logger.error(err.toString());
+//     }
+// }
 
 function runAtSpecificTimeOfDay(hour, minutes, func) {
     const twentyFourHours = 86400000;
@@ -89,4 +88,4 @@ runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
 //   }
 
 insertUsersIntoRedis();
-insertUsersIntoRedisOnce();
+// insertUsersIntoRedisOnce();

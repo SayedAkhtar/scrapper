@@ -79,7 +79,7 @@ const apiLogger = createLogger({
  
   transports: [
       new transports.Console({
-        level: 'debug',
+       level: 'debug',
        label: getLabel(module),
        colorize: true,
      }),
@@ -87,7 +87,4 @@ const apiLogger = createLogger({
       // dailyRotateFileTransport('scrapper_logs')
     ]
 })
-
-
-
- module.exports = {logger, scrapperLogger, apiLogger};
+module.exports = {logger, scrapperLogger, apiLogger};

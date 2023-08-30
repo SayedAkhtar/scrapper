@@ -20,7 +20,7 @@ const loginToInstagram = async () => {
   )
   puppeteer.use(StealthPlugin());  
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: 'new',
   });
   const page = await browser.newPage();
   await page.setUserAgent(
@@ -58,14 +58,14 @@ const loginToInstagram = async () => {
   await page.waitForNavigation();
   await page.screenshot({ path: "step3.png" }); 
 
-  // for (const frame of page.mainFrame().childFrames()) {
-  //   // Attempt to solve any potential captchas in those frames
-  //   await frame.solveRecaptchas()
-  // }
-  // await Promise.all([
-  // // page.waitForNavigation(),
-  // page.click(`button[type="button"]`)
-  // ])
+  for (const frame of page.mainFrame().childFrames()) {
+    // Attempt to solve any potential captchas in those frames
+    await frame.solveRecaptchas()
+  }
+  await Promise.all([
+  // page.waitForNavigation(),
+  page.click(`button[type="button"]`)
+  ])
   
   await page.goto("https://www.instagram.com/"+USERNAME, { waitUntil: "networkidle2" });
   await Utils.sleep(1);

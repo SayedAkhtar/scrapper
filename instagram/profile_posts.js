@@ -5,6 +5,7 @@ const { logger, scrapperLogger } = require("../logger");
 const { get } = require("http");
 const { API } = require("../config");
 const { exit } = require("process");
+const scrapingbee = require('scrapingbee')
 const downloadImageAndUploadToS3 = require("../service/download_to_s3");
 
 async function getProfilePosts(username) {
@@ -82,18 +83,40 @@ async function getProfilePostsFromApi(username) {
   let count = 0;
   let retryCount = 0;
   do {
-    try {
-      let posts = [];
-      var res = await fetch(fetchUrl, {
-        headers: header,
-        referrer: `https://www.instagram.com/${username}/`,
-        referrerPolicy: "strict-origin-when-cross-origin",
-        body: null,
-        method: "GET",
-        mode: "cors",
-        credentials: "include",
-      });
-      var body = await res.json();
+  //   const apiKey = 'TQ9CDAZSORUPU1NMZXZEM11VY7K3NC3HJPBNYP2V4CZZXUY9SWEULNDHOZ77XGWO9FA9A12XWFVWUBZJ';
+  //   const client = new scrapingbee.ScrapingBeeClient(apiKey);
+
+  // try {
+  //   const response = await client.get({
+  //     url: fetchUrl,
+  //     headers : header,
+  //     params: {
+	//       referrer: `https://www.instagram.com/${username}/`,
+  //       referrerPolicy: "strict-origin-when-cross-origin",
+  //       body: null,
+  //       method: "GET",
+  //       mode: "cors",
+  //       credentials: "include",
+  //       forward_headers_pure : true
+	//     },
+  //   });
+
+	
+    
+      try{
+        let posts= [];
+        var res = await fetch(fetchUrl,{
+          headers : header,
+          referrer: `https://www.instagram.com/${username}/`,
+          referrerPolicy: "strict-origin-when-cross-origin",
+          body: null,
+          method: "GET",
+          mode: "cors",
+          credentials: "include",
+
+        });
+      // const body = JSON.parse(response.text);
+      var body =await res.json();
       body.items.forEach(async (element) => {
         let likeCount = element.like_count;
         let timeStamp = element.taken_at;
@@ -101,20 +124,27 @@ async function getProfilePostsFromApi(username) {
         let storageUrl = [];
         let reelUrl = [];
         let commentsData = [];
+        let s3_storage_url = [];
         if ("carousel_media" in element) {
           let images = element.carousel_media;
           images.forEach(async (e) => {
-            const carousel_url = await downloadImageAndUploadToS3(username, element.code, 'post', e.image_versions2.candidates[0].url);
+            let carousel_url = e.image_versions2.candidates[0].url;
+            // carousel_url = await downloadImageAndUploadToS3(username, element.code, 'post', e.image_versions2.candidates[0].url);
             storageUrl.push({"url": carousel_url, "type": "image"});
+            // s3_storage_url.push({"url": carousel_url, "type": "image"});
           });
         }
         if("video_versions" in element){
-          const reel_url = await downloadImageAndUploadToS3(username, element.code, 'post', element.video_versions[0].url);
+          let reel_url = element.video_versions[0].url;
+          // reel_url = await downloadImageAndUploadToS3(username, element.code, 'post', element.video_versions[0].url);
           storageUrl.push({"url":reel_url, "type": "video"});
+          // s3_storage_url.push({"url":reel_url, "type": "video"});
         }
         if ("image_versions2" in element) {
-          const post = await downloadImageAndUploadToS3(username, element.code, 'post', element.image_versions2.candidates[0].url);
+          let post = element.image_versions2.candidates[0].url;
+          // post = await downloadImageAndUploadToS3(username, element.code, 'post', element.image_versions2.candidates[0].url);
           storageUrl.push({"url": post, "type": "image"});
+          // s3_storage_url.push({"url": post, "type": "image"});
         }
         if ("preview_comments" in element) {
           let comments = element.preview_comments;
@@ -135,6 +165,7 @@ async function getProfilePostsFromApi(username) {
           is_sponsored: element.is_paid_partnership,
           comments: commentsData,
           post_date: element.taken_at,
+          s3_storage_url: s3_storage_url
         };
         posts.push(data);
 
@@ -154,7 +185,7 @@ async function getProfilePostsFromApi(username) {
         // reels.push(reelsData);
       });
       body.more_available
-        ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=500&max_id=${body.next_max_id}`)
+        ? (fetchUrl = `https://www.instagram.com/api/v1/feed/user/${username}/username/?count=200&max_id=${body.next_max_id}`)
         : (moreAvailable = false);
       count += body.items.length;
       scrapperLogger.info(
@@ -167,6 +198,7 @@ async function getProfilePostsFromApi(username) {
         logger.info(`${username} ${count} post inserted`)
       }
       await Utils.sleep(100);
+    
     } catch (e) {
       logger.error(e.toString());
       console.log(e);
@@ -174,6 +206,7 @@ async function getProfilePostsFromApi(username) {
       await Utils.sleep(100);
       if (retryCount > 2) {
         moreAvailable = false;
+      // }
       }
     }
   } while (moreAvailable);
@@ -237,9 +270,10 @@ if (require.main === module) {
     getProfilePostsFromApi(args[0]);
   } else {
     console.error(
-      "Please provide a username  \nUsage: node instagram/profile_stats.js <username>"
+      "Please provide a username  \nUsage: node instagram/profile_posts.js <username>"
     );
   }
 }
 
 module.exports = getProfilePostsFromApi;
+

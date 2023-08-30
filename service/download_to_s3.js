@@ -3,6 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 const { AWS_ACCESS_KEY, AWS_SECRET_KEY, API } = require('../config');
 const { logger, scrapperLogger } = require('../logger');
+const scrapingbee = require('scrapingbee');
 const { exit } = require('process');
 const { sleep } = require('../helpers/Utils');
 
@@ -14,6 +15,8 @@ AWS.config.update({
 });
 
 const s3 = new AWS.S3();
+
+
 
 // Replace this URL with the actual Instagram image URL you want to download
 
