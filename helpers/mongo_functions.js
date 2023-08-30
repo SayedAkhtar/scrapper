@@ -32,6 +32,7 @@ async function insertUsersToMongo(req) {
         return true;
     } catch (e) {
         console.log(e.toString());
+        console.log("Log from insertPostsToMongo :"+e);
         logger.error(e.toString());
     }
     return false;
@@ -55,7 +56,7 @@ async function insertPostsToMongo(req) {
 
     } catch (e) {
         logger.error(e.toString());
-        console.log(e);
+        console.log("Log from insertPostsToMongo :"+e);
     }
     return false;
 }
@@ -78,7 +79,7 @@ async function insertReelsToMongo(req, username = "") {
         }
     } catch (e) {
         logger.error(e.toString());
-        console.log(e);
+        console.log("Log from insertReelsToMongo :"+e);
     }
     return false;
 }
