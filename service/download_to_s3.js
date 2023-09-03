@@ -1,11 +1,13 @@
 const AWS = require('aws-sdk');
 const axios = require('axios');
 const fs = require('fs');
+const { createClient } = require('redis');
 const { AWS_ACCESS_KEY, AWS_SECRET_KEY, API } = require('../config');
 const { logger, scrapperLogger } = require('../logger');
 const scrapingbee = require('scrapingbee');
 const { exit } = require('process');
 const { sleep } = require('../helpers/Utils');
+const { throws } = require('assert');
 
 // Set up AWS credentials and S3 bucket details
 AWS.config.update({
@@ -27,7 +29,7 @@ async function downloadImageAndUploadToS3(username, postname, type, instagramIma
     const contentType = response.headers['content-type'];
     const imageBuffer = Buffer.from(response.data, 'binary');
     const EXT = contentType.split('/')[1];
-    const filename = username+'/'+type+'/'+postname+'.'+EXT;
+    const filename = username + '/' + type + '/' + postname + '.' + EXT;
     // Upload the image to S3
     const uploadParams = {
       Bucket: 'scrapperfiles',
@@ -46,34 +48,34 @@ async function downloadImageAndUploadToS3(username, postname, type, instagramIma
   return Promise.resolve(false);
 }
 
-async function getUsernames(){
+async function getUsernames() {
   // const response = await axios.get(API+'api/tracking?processing_status=processed');
   // const users = await response.data;
   let username;
   const users = ['sushmitha_sheshagiri'];
   users.forEach(async user => {
-    try{
-      username =user;
+    try {
+      username = user;
       // if(username == "dishapatani"){
       //   return;
       // }
       // username = "theanassander11"
-      const reels = await axios.get(API+'api/reel?user_name='+username);
+      const reels = await axios.get(API + 'api/reel?user_name=' + username);
       const compObj = [];
-      for(const reel of reels.data){
+      for (const reel of reels.data) {
         // if(reel.s3_storage_url.length > 0){
         //   return;
         // }
         const update = [];
-        const reelId= reel.reel_id;
+        const reelId = reel.reel_id;
         const s3_url = await downloadImageAndUploadToS3(username, reelId, 'reel', reel.reel_url);
-        if(s3_url){
-          update.push({"url": s3_url, "type": "reel"});
+        if (s3_url) {
+          update.push({ "url": s3_url, "type": "reel" });
         }
-        for(const obj of reel.storage_url){
+        for (const obj of reel.storage_url) {
           let s3_url2 = await downloadImageAndUploadToS3(username, reelId, obj.type, obj.url);
-          if(s3_url2){
-            update.push({"url": s3_url2, "type": "reel"});
+          if (s3_url2) {
+            update.push({ "url": s3_url2, "type": "reel" });
           }
         }
         const newReel = {};
@@ -82,7 +84,7 @@ async function getUsernames(){
         await postReelsDataToMongo([newReel], username);
         await sleep(2);
       }
-    }catch(error){
+    } catch (error) {
       if (error.response) {
         console.log(error.response.statusText);
       } else if (error.request) {
@@ -93,6 +95,45 @@ async function getUsernames(){
     }
   });
 
+}
+
+async function fromRedis() {
+  try {
+    const client = createClient(6379, '127.0.0.1');
+    client.on('error', err => console.log('Redis Client Error', err));
+    await client.connect();
+    const keys = await client.KEYS("download_*");
+    for (const reel of keys) {
+      const data = await client.get(reel);
+      const reelsData = JSON.parse(data);
+      const update = [];
+      const reelId = reelsData.type == 'reel' ? reelsData.postname: reelsData.post_id;
+      try{
+        console.log(reelsData);
+        if(reelsData.hasOwnProperty('url')){
+          const s3_url = await downloadImageAndUploadToS3(reelsData.username, reelId, reelsData.type, reelsData.url);
+          if (s3_url) {
+            update.push({ "url": s3_url, "type": reelsData.type });
+          }
+          if(reelsData.hasOwnProperty('thumbnail')){
+            const thumbnail = await downloadImageAndUploadToS3(reelsData.username, reelId, "thumbnail", reelsData.thumbnail);
+            update.push({ "url": thumbnail, "type": "thumbnail" });
+          }
+          console.log(s3_url, update);
+          const newReel = {};
+          newReel.reel_id = reelId
+          newReel.s3_storage_url = update;
+          await postReelsDataToMongo([newReel], reelsData.username);
+          await sleep(1);
+        }
+      }catch(e){
+        throw e;
+      }
+      await client.del(reel);
+    }
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 async function postReelsDataToMongo(req, username = "") {
@@ -118,6 +159,39 @@ async function postReelsDataToMongo(req, username = "") {
   return false;
 }
 
-getUsernames();
+fromRedis();
+setInterval(async () => {
+  fromRedis();
+}, 100 * 1000);
+
+
+async function deleteAllObjects(bucketName) {
+  for(let i =0; i< 20; i++){
+    try {
+      const listParams = { Bucket: bucketName };
+      const objects = await s3.listObjectsV2(listParams).promise();
+  
+      if (objects.Contents.length === 0) {
+        console.log('No objects found in the bucket.');
+        return;
+      }
+  
+      const deleteParams = {
+        Bucket: bucketName,
+        Delete: { Objects: objects.Contents.map(obj => ({ Key: obj.Key })) },
+      };
+  
+      const deletedObjects = await s3.deleteObjects(deleteParams).promise();
+      console.log('Deleted objects:', deletedObjects.Deleted.length);
+      await sleep(2);
+    } catch (error) {
+      console.error('An error occurred:', error.message);
+    }
+  }
+  
+
+}
+
+
 // downloadImageAndUploadToS3('dasd','dasdas','dasdas','dasdas');
 module.exports = downloadImageAndUploadToS3

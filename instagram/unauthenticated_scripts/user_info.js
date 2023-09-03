@@ -30,8 +30,9 @@
 
 const axios = require('axios');
 const fs = require('fs');
-const {insertUsersToMongo} = require('../../helpers/mongo_functions');
+const { insertUsersToMongo, updateStatus } = require('../../helpers/mongo_functions');
 const { logger } = require('../../logger');
+const config = require('../../config');
 
 async function userInfo(uname) {
     try {
@@ -42,32 +43,60 @@ async function userInfo(uname) {
             'Referer': 'https://www.instagram.com',
             'Connection': 'keep-alive',
             'Cache-Control': 'max-age=0',
-            'x-asbd-id':129477,
-            'x-csrftoken':'y2xcxCaKUXfV06V8vDpgAZRK47nZSXgM',
-            'x-ig-app-id':936619743392459
-          };
-        const res = await axios.get(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${uname}`, {
-            headers: headers
-        });
+            'x-asbd-id': 129477,
+            'x-csrftoken': 'y2xcxCaKUXfV06V8vDpgAZRK47nZSXgM',
+            'x-ig-app-id': 936619743392459
+        };
+        const url = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${uname}`;
 
-        
+        let res;
+        try {
+            // res = await axios.get(url, { headers: headers });
+            res = await axios.get('https://app.scrapingbee.com/api/v1', {
+                params: {
+                    'api_key': config.SCRAPINGBEE_KEY,
+                    'url': url,
+                    'forward_headers': 'true',
+                },
+                // headers: headers
+            })
+        } catch (e) {
+            res = await axios.get('https://app.scrapingbee.com/api/v1', {
+                params: {
+                    'api_key': config.SCRAPINGBEE_KEY,
+                    'url': url,
+                    'forward_headers': 'true',
+                    'stealth_proxy': 'true', 
+                },
+                // headers: headers
+            })
+        }
+        console.log(res);
         let user = res.data.data.user;
+
         let request = {
             username: user.username,
             name: user.full_name,
             postsCount: user.edge_owner_to_timeline_media.count,
-            followersCount: user.edge_follow.count,
-            followingCount: user.edge_followed_by.count,
+            followersCount: user.edge_followed_by.count,
+            followingCount: user.edge_follow.count,
             is_private: user.is_private,
             is_verified: user.is_verified,
             is_business: user.is_business_account,
             profile_id: user.id,
         };
         await insertUsersToMongo(request);
-    }catch(e){
-        console.log(e);
-        logger.error(e.toString());
+        await updateStatus(user.username);
+        let returnObj = { "user_id": user.id, "posts_count": user.edge_owner_to_timeline_media.count };
+
+        return returnObj;
+    } catch (e) {
+        console.log("Error from userInfo: " + e.toString());
+        // logger.error(e.toString());
+        return false;
     }
 }
 
-userInfo('kalyanikhaladkar');
+// userInfo('isro_ksivan');
+
+exports.userInfo = userInfo;

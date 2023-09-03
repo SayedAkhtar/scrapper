@@ -21,10 +21,8 @@ async function insertUsersToMongo(req) {
         body: JSON.stringify(user),
         headers: { "Content-Type": "application/json" },
     };
-    console.log(options);
     try {
         let res = await fetch(API + "api/user", options);
-        console.log(res);
         let data = await res.json();
         scrapperLogger.info(
             `Profile stats for ${req.username} posted successfully`
@@ -32,7 +30,7 @@ async function insertUsersToMongo(req) {
         return true;
     } catch (e) {
         console.log(e.toString());
-        console.log("Log from insertPostsToMongo :"+e);
+        console.log("Log from insertUsersToMongo :"+e);
         logger.error(e.toString());
     }
     return false;
@@ -49,6 +47,7 @@ async function insertPostsToMongo(req) {
         let data = await res.json();
         logger.info(`${req.user_name} post inserted`)
         if (res.status == 200) {
+            console.log(req[0].user_name+" Posts Posted");
             return true;
         } else {
             logger.info(`${data.toString()}`)
@@ -73,6 +72,7 @@ async function insertReelsToMongo(req, username = "") {
         let data = await res.json();
 
         if (res.status == 201 || res.status == 200) {
+            console.log(req[0].user_name+" Posts Posted");
             return true;
         } else {
             logger.info(`${data.message}`);

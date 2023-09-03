@@ -6,7 +6,6 @@ async function getUsers(processing_status = 'none') {
     try {
         const response = await fetch(API + 'api/tracking?processing_status=' + processing_status)
         const users = await response.json()
-        console.log(users, processing_status);
         return users
     } catch (e) {
         throw e;
@@ -20,15 +19,18 @@ async function insertUsersIntoRedis(status = 'none') {
         await client.connect();
         setInterval(async () => {
             const users = await getUsers(status);
-            users.forEach(async user => {
-                let bool = await client.exists("USER_NOW:" + user.user_name);
-                if(!bool){
-                    await client.set("USER_NOW:" + user.user_name, user.processing_status);
-                }
-                // await client.set("USER_NOW:" + user.user_name, user.processing_status);
-            });
-            console.log("Users inserted into redis");
-        }, REFRESH_INTERVAL * 1000);
+            if(users){
+                users.forEach(async user => {
+                    let bool = await client.exists("USER_NOW:" + user.user_name);
+                    if(!bool){
+                        await client.set("USER_NOW:" + user.user_name, user.processing_status);
+                        console.log("Users inserted into redis");
+                    }
+                    // await client.set("USER_NOW:" + user.user_name, user.processing_status);
+                });
+            }
+            console.log("No Users");
+        }, 1 * 1000);
     } catch (err) {
         logger.error(err.toString());
     }

@@ -1,12 +1,14 @@
 const { createClient } = require("redis");
 const { logger, scrapperLogger } = require("../logger.js");
-const getProfileStatsApi = require("../instagram/profile_stats.js");
-const fetchApiHeaders = require("../instagram/fetch_api_headers.js");
-const getProfilePostsFromApi = require("../instagram/profile_posts.js");
+// const getProfileStatsApi = require("../instagram/profile_stats.js");
+// const fetchApiHeaders = require("../instagram/fetch_api_headers.js");
+// const getProfilePostsFromApi = require("../instagram/profile_posts.js");
 const { sleep } = require("../helpers/Utils.js");
 const { REFRESH_INTERVAL } = require("../config.js");
 const { spawn } = require("child_process");
-const fetchApiReelsHeaders = require("../instagram/fetch_reels_api_headers.js");
+// const fetchApiReelsHeaders = require("../instagram/fetch_reels_api_headers.js");
+const { userInfo } = require("../instagram/unauthenticated_scripts/user_info.js");
+const { getPosts } = require("../instagram/unauthenticated_scripts/profile_all_posts.js");
 
 var POST_THREAD_COUNT = 0;
 var REEL_THREAD_COUNT = 0;
@@ -20,6 +22,7 @@ async function init() {
   try {
     setInterval(async () => {
       const keys = await client.KEYS("USER:*");
+      console.log(keys);
       // const keys = undefined;
       const priority = await client.KEYS("USER_NOW:*");
       console.table(keys, priority);
@@ -47,19 +50,17 @@ async function init() {
 }
 
 async function main(user) {
+  console.log("Current User : ------------- : "+user);
   if((user != "https" || user.length != 0) && (POST_THREAD_COUNT + REEL_THREAD_COUNT < 10)){
-    let userId = await fetchApiHeaders(user);
-    if(userId == -1){
-      return -1;
+    // let userId = await fetchApiHeaders(user);
+    // if(userId == -1){
+    //   return -1;
+    // }
+    let res = await userInfo(user);
+    if(res.hasOwnProperty('user_id')){
+      let status = await getPosts(res.user_id, res.posts_count);
+      return status;
     }
-    let res = await fetchApiReelsHeaders(user);
-    let status = await getProfileStatsApi(userId);
-    scrapperLogger.info(`User ${user} deleted from redis`);
-    childPostDetails(user);
-    childReels(userId, user);
-    scrapperLogger.info(`Current POST thread count: ${POST_THREAD_COUNT}`);
-    scrapperLogger.info(`Current REEL thread count: ${REEL_THREAD_COUNT}`);
-    return status;
   }
   return false;
 }
