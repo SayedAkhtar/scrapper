@@ -73,9 +73,9 @@ async function runner(users) {
 
 // init();
 
-const childPostDetails = (username) => {
+const childPostDetails = (username, post_count) => {
   POST_THREAD_COUNT = POST_THREAD_COUNT + 1;
-  const child = spawn("node", ["instagram/profile_posts.js", username]);
+  const child = spawn("node", ["instagram/unauthenticated_scripts/profile_all_posts.js", username]);
 
   child.stdout.on("data", (data) => {
     logger.info(`${username} (Post Scrapper): ${data}`);

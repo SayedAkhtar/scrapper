@@ -4,21 +4,28 @@ const { logger } = require('../logger.js');
 
 async function getUsers(processing_status = 'none') {
     try {
+        console.log(API + 'api/tracking?processing_status=' + processing_status);
         const response = await fetch(API + 'api/tracking?processing_status=' + processing_status)
+        console.log(response);
         const users = await response.json()
+        console.log(users);
         return users
     } catch (e) {
+        console.log(e);
         throw e;
     }
 }
 
 async function insertUsersIntoRedis(status = 'none') {
     try {
+        console.log("Print");
         const client = createClient(6379, '127.0.0.1');
         client.on('error', err => console.log('Redis Client Error', err));
         await client.connect();
-        setInterval(async () => {
+        console.log("Print");
+        // setInterval(async () => {
             const users = await getUsers(status);
+            console.log(users);
             if(users){
                 users.forEach(async user => {
                     let bool = await client.exists("USER_NOW:" + user.user_name);
@@ -30,8 +37,9 @@ async function insertUsersIntoRedis(status = 'none') {
                 });
             }
             console.log("No Users");
-        }, 1 * 1000);
+        // }, 1 * 1000);
     } catch (err) {
+        console.log(err);
         logger.error(err.toString());
     }
 
@@ -89,5 +97,6 @@ runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
 //     }
 //   }
 
-insertUsersIntoRedis();
+getUsers();
+// insertUsersIntoRedis();
 // insertUsersIntoRedisOnce();
