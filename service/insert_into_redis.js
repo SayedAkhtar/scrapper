@@ -1,6 +1,6 @@
 const { API, REFRESH_INTERVAL } = require('./../config');
 const { createClient } = require('redis');
-const { logger } = require('../logger.js');
+const { logger, scrapperLogger } = require('../logger.js');
 
 async function getUsers(processing_status = 'none') {
     try {
@@ -23,7 +23,7 @@ async function insertUsersIntoRedis(status = 'none') {
         client.on('error', err => console.log('Redis Client Error', err));
         await client.connect();
         console.log("Print");
-        // setInterval(async () => {
+        setInterval(async () => {
             const users = await getUsers(status);
             console.log(users);
             if(users){
@@ -31,13 +31,13 @@ async function insertUsersIntoRedis(status = 'none') {
                     let bool = await client.exists("USER_NOW:" + user.user_name);
                     if(!bool){
                         await client.set("USER_NOW:" + user.user_name, user.processing_status);
-                        console.log("Users inserted into redis");
+                        scrapperLogger.info("Users inserted into redis "+ user.user_name);
                     }
                     // await client.set("USER_NOW:" + user.user_name, user.processing_status);
                 });
             }
             console.log("No Users");
-        // }, 1 * 1000);
+        }, 1 * 1000);
     } catch (err) {
         console.log(err);
         logger.error(err.toString());
@@ -45,24 +45,24 @@ async function insertUsersIntoRedis(status = 'none') {
 
 }
 
-// async function insertUsersIntoRedisOnce() {
-//     try {
-//         const client = createClient(6379, '127.0.0.1');
-//         client.on('error', err => console.log('Redis Client Error', err));
-//         await client.connect();
-//         const users = await getUsers("processed");
-//         users.forEach(async user => {
-//             let bool = await client.exists("USER:" + user.user_name);
-//             if(!bool){
-//                 await client.set("USER:" + user.user_name, user.processing_status);
-//             }
+async function insertUsersIntoRedisOnce() {
+    try {
+        const client = createClient(6379, '127.0.0.1');
+        client.on('error', err => console.log('Redis Client Error', err));
+        await client.connect();
+        const users = await getUsers("processed");
+        users.forEach(async user => {
+            let bool = await client.exists("USER:" + user.user_name);
+            if(!bool){
+                await client.set("USER:" + user.user_name, user.processing_status);
+            }
             
-//         });
-//         console.log("Users inserted into redis");
-//     } catch (err) {
-//         logger.error(err.toString());
-//     }
-// }
+        });
+        console.log("Users inserted into redis");
+    } catch (err) {
+        logger.error(err.toString());
+    }
+}
 
 function runAtSpecificTimeOfDay(hour, minutes, func) {
     const twentyFourHours = 86400000;
@@ -97,6 +97,5 @@ runAtSpecificTimeOfDay(10, 0, () => { insertUsersIntoRedisOnce(); });
 //     }
 //   }
 
-getUsers();
-// insertUsersIntoRedis();
-// insertUsersIntoRedisOnce();
+insertUsersIntoRedis();
+insertUsersIntoRedisOnce();

@@ -37,7 +37,8 @@ async function getPosts(userId, totalPostCount) {
             'x-ig-app-id': 936619743392459
         };
 
-        let pageCount = Math.ceil(totalPostCount / 50);
+        // let pageCount = Math.ceil(totalPostCount / 50);
+        let pageCount = 2;
         let variables = {};
         variables.id = userId;
         variables.first = 50;
@@ -128,10 +129,13 @@ async function getPosts(userId, totalPostCount) {
 
                 }
                 console.log("posts fetched");
+                scrapperLogger.info(`Profile posts for ${data.user_name} fetched successfully`); //logger added
                 await insertReelsToMongo(reels);
                 await insertPostsToMongo(posts);
                 console.log("Posted " + posts.length + " Posts");
+                logger.info(`Posts inserted in mongoDb for ${data.user_name}`); //logger added
                 console.log("Posted " + reels.length + " Reels");
+                logger.info(`Reels inserted in mongoDb for ${data.user_name}`); //logger added
             }
         }
         await client.quit();

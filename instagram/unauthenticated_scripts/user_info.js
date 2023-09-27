@@ -86,13 +86,15 @@ async function userInfo(uname) {
             profile_id: user.id,
         };
         await insertUsersToMongo(request);
-        await updateStatus(user.username);
+        logger.info(`data inserted into mongoDB for ${user.username}`); //logger added
+        await updateStatus(user.username); //logger added
+        logger.info(`data updated for ${user.username}`);
         let returnObj = { "user_id": user.id, "posts_count": user.edge_owner_to_timeline_media.count };
 
         return returnObj;
     } catch (e) {
         console.log("Error from userInfo: " + e.toString());
-        // logger.error(e.toString());
+        logger.error(e.toString());
         return false;
     }
 }

@@ -58,8 +58,9 @@ async function main(user) {
     // }
     let res = await userInfo(user);
     if(res.hasOwnProperty('user_id')){
-      let status = await getPosts(res.user_id, res.posts_count);
-      return status;
+      childPostDetails(res.user_id, res.posts_count);
+      console.log("Starting Child process for Scrapping "+res.posts_count+" of "+user);
+      return true;
     }
   }
   return false;
