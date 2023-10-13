@@ -71,9 +71,9 @@ async function userInfo(uname) {
                 // headers: headers
             })
         }
-        console.log(res);
+       console.log(res);
         let user = res.data.data.user;
-
+        
         let request = {
             username: user.username,
             name: user.full_name,

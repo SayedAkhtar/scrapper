@@ -88,6 +88,7 @@ async function getPosts(userId, totalPostCount) {
                             storage_url: [{ "url": node.video_url, "type": "reel", "thumbnail": node.display_url }],
                             num_comments: node.edge_media_to_comment.count ?? 0,
                             num_likes: node.edge_media_preview_like.count ?? 0,
+                            num_views: node.video_view_count ?? 0,
                             is_sponsored: node.is_paid_partnership,
                             comments: [],
                             post_date: node.taken_at_timestamp,
@@ -149,5 +150,6 @@ async function getPosts(userId, totalPostCount) {
 }
 
 // getPosts('15385930162', 199);
+// getPosts('8294227805');
 exports.getPosts = getPosts;
 

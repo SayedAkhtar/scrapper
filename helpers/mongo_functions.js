@@ -11,9 +11,9 @@ async function insertUsersToMongo(req) {
             followers: req.followersCount,
             following: req.followingCount,
             // creation_date: date.toJSON().toString(),
-            is_private: false,
-            is_verified: true,
-            is_business: false,
+            is_private: req.is_private,
+            is_verified: req.is_verified,
+            is_business: req.is_business,
         },
     ];
     const options = {

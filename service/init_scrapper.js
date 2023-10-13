@@ -57,10 +57,12 @@ async function main(user) {
     //   return -1;
     // }
     let res = await userInfo(user);
-    if(res.hasOwnProperty('user_id')){
+        if(res.hasOwnProperty('user_id')){
       childPostDetails(res.user_id, res.posts_count);
-      console.log("Starting Child process for Scrapping "+res.posts_count+" of "+user);
-      return true;
+      let status = await getPosts(res.user_id, res.posts_count)
+      // console.log("Starting Child process for Scrapping "+res.posts_count+" of "+user);
+      //return true;
+      return status;
     }
   }
   return false;
@@ -77,7 +79,7 @@ async function runner(users) {
 const childPostDetails = (username, post_count) => {
   POST_THREAD_COUNT = POST_THREAD_COUNT + 1;
   const child = spawn("node", ["instagram/unauthenticated_scripts/profile_all_posts.js", username]);
-
+  
   child.stdout.on("data", (data) => {
     logger.info(`${username} (Post Scrapper): ${data}`);
     console.log("StdOut : " + data);
