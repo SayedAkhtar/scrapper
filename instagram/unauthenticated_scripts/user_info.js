@@ -37,15 +37,15 @@ const config = require('../../config');
 async function userInfo(uname) {
     try {
         const headers = {
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.instagram.com',
-            'Connection': 'keep-alive',
-            'Cache-Control': 'max-age=0',
-            'x-asbd-id': 129477,
-            'x-csrftoken': 'y2xcxCaKUXfV06V8vDpgAZRK47nZSXgM',
-            'x-ig-app-id': 936619743392459
+            'Spb-User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+            'Spb-Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+            'Spb-Accept-Language': 'en-US,en;q=0.9',
+            'Spb-Referer': 'https://www.instagram.com',
+            'Spb-Connection': 'keep-alive',
+            'Spb-Cache-Control': 'max-age=0',
+            'Spb-x-asbd-id': 129477,
+            'Spb-x-csrftoken': 'y2xcxCaKUXfV06V8vDpgAZRK47nZSXgM',
+            'Spb-x-ig-app-id': 936619743392459
         };
         const url = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${uname}`;
 
@@ -58,7 +58,7 @@ async function userInfo(uname) {
                     'url': url,
                     'forward_headers': 'true',
                 },
-                // headers: headers
+                headers: headers
             })
         } catch (e) {
             res = await axios.get('https://app.scrapingbee.com/api/v1', {
@@ -68,10 +68,10 @@ async function userInfo(uname) {
                     'forward_headers': 'true',
                     'stealth_proxy': 'true', 
                 },
-                // headers: headers
+                headers: headers
             })
         }
-       console.log(res);
+        console.log(res);
         let user = res.data.data.user;
         
         let request = {
